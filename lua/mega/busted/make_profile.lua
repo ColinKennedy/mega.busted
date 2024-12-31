@@ -15,7 +15,7 @@ package.path = string.format(
     package.path -- The original paths
 )
 
-local helper = require("mega.busted.profile_using_flamegraph.helper")
+local helper = require("mega.busted._core.profile_using_flamegraph.helper")
 local instrument = require("profile.instrument")
 local profile = require("profile")
 local logging = require("mega.logging")
@@ -215,7 +215,7 @@ local function run_tests(profiler, options)
 
     while true do
         _P.reset_busted_packages()
-        local runner = require("busted.multi_runner")
+        local runner = require("mega.busted._core.multi_runner")
         ---@diagnostic disable-next-line: cast-type-mismatch
         ---@cast runner busted.MultiRunner
 
