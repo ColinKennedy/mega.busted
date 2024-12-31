@@ -268,6 +268,7 @@ local function main()
     -- NOTE: Don't profile the unittest framework
     local profiler = profile
     profiler.ignore("busted*")
+    profiler.ignore("mega.busted*")
 
     instrument("*")
 
