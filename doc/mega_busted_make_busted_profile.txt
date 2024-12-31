@@ -1,0 +1,38 @@
+==============================================================================
+------------------------------------------------------------------------------
+A modified `busted` unittest suite runner.
+
+It runs tests multiple times and, each time, records profiler and timing results.
+
+------------------------------------------------------------------------------
+*mega.busted.BustedProfilerOptions*
+   All options used to visualize profiler results as line graph data.
+
+Fields ~
+    {allowed_tags} `(string)`[]
+       Get the allowes tags that may write to disk. e.g. `{"foo.*bar", "thing"}`.
+    {event_summary_filter} (fun(event: |profile.Event|): `(boolean)`)?
+       If `true`, the given event is included during profiler summaries. If
+       `false`, it is excluded. This is useful when you want to summarize only
+       one type of profiler event when many possible types exist.
+    {keep_old_tag_directories} `(boolean)`
+       If the user's busted unittests previously defined a tag, e.g. a tag called `asdf`
+       and now that tag is gone and this option is `true` then all previous profile
+       results for that tag are deleted. This is just to keep the folders as clean and
+       up-to-date as possible.
+
+------------------------------------------------------------------------------
+*mega.busted.StandaloneProfilerOptions*
+   All settings needed to control a generic, terminal profile session (non-busted).
+
+------------------------------------------------------------------------------
+                                        *mega.busted.make_busted_profile.main()*
+
+`mega.busted.make_busted_profile.main`()
+
+Run these tests.
+
+
+WARNING: This file is auto-generated. Do not edit it!
+
+ vim:tw=78:ts=8:noet:ft=help:norl:
