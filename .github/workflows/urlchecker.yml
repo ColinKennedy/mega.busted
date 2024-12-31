@@ -30,12 +30,6 @@ jobs:
         subfolder: lua
         file_types: .json,.lua,.md,.txt,.vim,.yml
 
-    - name: urlcheck - plugin directory
-      uses: urlstechie/urlchecker-action@master
-      with:
-        subfolder: plugin
-        file_types: .json,.lua,.md,.txt,.vim,.yml
-
     - name: urlcheck - scripts directory
       uses: urlstechie/urlchecker-action@master
       with:
@@ -51,7 +45,7 @@ jobs:
     - name: urlcheck - CHANGELOG.md
       uses: urlstechie/urlchecker-action@master
       with:
-        exclude_patterns: https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v
+        exclude_patterns: https://github.com/ColinKennedy/mega.busted/compare/v
         subfolder: .
         include_files: CHANGELOG.md
       if: ${{ github.event.pull_request.head.ref == 'release-please--branches--main' }}

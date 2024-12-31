@@ -22,10 +22,10 @@ llscheck: clone_git_dependencies
 	VIMRUNTIME=`nlua -e 'io.write(os.getenv("VIMRUNTIME"))'` llscheck --configpath .luarc.json .
 
 luacheck:
-	luacheck lua plugin scripts spec
+	luacheck lua scripts spec
 
 stylua:
-	stylua lua plugin scripts spec
+	stylua lua scripts spec
 
 test: clone_git_dependencies
 	busted .
