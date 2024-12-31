@@ -1209,6 +1209,8 @@ function M.write_summary_directory(profiler, events, maximum, options)
 
     local graphs = _P.write_graph_images(artifacts, root, options.keep_temporary_files)
 
+    local latests
+
     if latest and second_latest then
         latests = {latest=latest, second_latest=second_latest}
     end

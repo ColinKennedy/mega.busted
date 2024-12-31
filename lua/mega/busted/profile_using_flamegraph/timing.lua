@@ -64,7 +64,6 @@ local _SectionLabel = {
 -- This is meant to be a number that we shouldn't be able to actually hit
 local _DEFAULT_PRECISION = 2
 local _DEFAULT_SECTIONS = { _Section.count, _Section.total_time, _Section.self_time, _Section.name }
-local _PLUGIN_PREFIX = "plugin_template"
 
 ---@enum _TableStyle
 M.TableStyle = {
@@ -79,35 +78,6 @@ M.TableStyle = {
 ---
 function _P.get_digits_count(value)
     return #tostring(value)
-end
-
---- Check if this plugin defined this `event` function.
----
----@param event profile.Event
----    The profiler event to check. It might be a function, or describe block
----    or anything else.
----@return boolean
----    If `event` is defined here, return `true`. Otherwise if it is an
----    external function or a Neovim core function, return `false`.
----
-function _P.is_plugin_function(event)
-    if not event.cat or event.cat ~= "function" then
-        return false
-    end
-
-    local _ALLOWED_NAMES = { _PLUGIN_PREFIX }
-
-    if vim.tbl_contains(_ALLOWED_NAMES, event.name) then
-        return true
-    end
-
-    for _, name in ipairs(_ALLOWED_NAMES) do
-        if string.match(event.name, name .. "%.") then
-            return true
-        end
-    end
-
-    return false
 end
 
 --- Compute all padding needed to display the timing information with uniform columns.
@@ -399,7 +369,7 @@ end
 ---@return _ProfilerLine[] # The computed data (that will later become the report).
 ---
 function M.get_profile_report_lines(events, options)
-    local predicate = options.predicate or _P.is_plugin_function
+    local predicate = options.predicate or function() return true end
     local threshold = options.threshold or 20
     local functions_by_name, functions, counts = _P.get_totals(events, predicate)
 
