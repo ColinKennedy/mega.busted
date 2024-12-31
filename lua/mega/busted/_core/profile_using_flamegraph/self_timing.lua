@@ -10,7 +10,7 @@
 
 local logging = require("mega.logging")
 
-local _LOGGER = logging.get_logger("mega.busted.profile_using_flamegraph.self_timing")
+local _LOGGER = logging.get_logger("mega.busted._core.profile_using_flamegraph.self_timing")
 local _P = {}
 local M = {}
 

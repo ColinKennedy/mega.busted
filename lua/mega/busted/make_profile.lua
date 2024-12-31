@@ -7,7 +7,7 @@
 
 local _CURRENT_DIRECTORY =
     vim.fs.dirname(vim.fs.joinpath(vim.fn.getcwd(), debug.getinfo(1, "S").source:match("@(.*)$")))
-local _ROOT = vim.fs.dirname(vim.fs.dirname(_CURRENT_DIRECTORY))
+local _ROOT = vim.fs.dirname(vim.fs.dirname(vim.fs.dirname(_CURRENT_DIRECTORY)))
 package.path = string.format(
     "%s;%s;%s",
     vim.fs.joinpath(_ROOT, "lua", "?.lua"), -- Append this plugin's lua/ folder
@@ -32,7 +32,7 @@ function _P.append_profiler_arg_values()
         index = index + 1
     end
 
-    arg[index] = "--output=busted.profile_using_flamegraph"
+    arg[index] = "--output=mega.busted._core.profile_using_flamegraph"
 end
 
 --- Replace parts of the user's arguments with our own.
