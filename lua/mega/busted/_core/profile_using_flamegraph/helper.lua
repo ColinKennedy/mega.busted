@@ -4,7 +4,7 @@
 ---
 
 local constant = require("mega.busted.profile_using_flamegraph.constant")
-local instrument = require("profile.instrument")
+local instrument = require("mega.busted._vendors.profile.instrument")
 local logging = require("mega.logging")
 local numeric = require("mega.busted.profile_using_flamegraph.numeric")
 local timing = require("mega.busted.profile_using_flamegraph.timing")
