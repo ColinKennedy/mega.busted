@@ -3,11 +3,11 @@
 ---@module 'busted.profile_using_flamegraph.helper'
 ---
 
-local constant = require("mega.busted.profile_using_flamegraph.constant")
+local constant = require("mega.busted._core.profile_using_flamegraph.constant")
 local instrument = require("mega.busted._vendors.profile.instrument")
 local logging = require("mega.logging")
-local numeric = require("mega.busted.profile_using_flamegraph.numeric")
-local timing = require("mega.busted.profile_using_flamegraph.timing")
+local numeric = require("mega.busted._core.profile_using_flamegraph.numeric")
+local timing = require("mega.busted._core.profile_using_flamegraph.timing")
 
 ---@class _ArtifactComparison Details on the current / previous run.
 ---@field latest _GraphArtifact The most-recent version's best profiler run.

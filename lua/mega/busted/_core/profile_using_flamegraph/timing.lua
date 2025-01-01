@@ -3,8 +3,8 @@
 ---@module 'busted.profile_using_flamegraph.timing'
 ---
 
-local numeric = require("mega.busted.profile_using_flamegraph.numeric")
-local self_timing = require("mega.busted.profile_using_flamegraph.self_timing")
+local numeric = require("mega.busted._core.profile_using_flamegraph.numeric")
+local self_timing = require("mega.busted._core.profile_using_flamegraph.self_timing")
 local tabler = require("mega.busted._core.tabler")
 
 ---@class _GroupedEvents Some profile events that have a common `name`.

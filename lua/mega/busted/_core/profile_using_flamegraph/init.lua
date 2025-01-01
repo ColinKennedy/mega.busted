@@ -8,8 +8,8 @@
 ---@see https://github.com/hishamhm/busted-htest/blob/master/src/busted/outputHandlers/htest.lua
 
 local clock = require("profile.clock")
-local constant = require("mega.busted.profile_using_flamegraph.constant")
-local helper = require("mega.busted.profile_using_flamegraph.helper")
+local constant = require("mega.busted._core.profile_using_flamegraph.constant")
+local helper = require("mega.busted._core.profile_using_flamegraph.helper")
 local instrument = require("profile.instrument")
 local logging = require("mega.logging")
 local profile = require("profile")
