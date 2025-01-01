@@ -14,11 +14,6 @@ clone_git_dependencies:
 	git clone git@github.com:LuaCATS/busted.git .dependencies/busted $(IGNORE_EXISTING)
 	git clone git@github.com:LuaCATS/luassert.git .dependencies/luassert $(IGNORE_EXISTING)
 	git clone git@github.com:Bilal2453/luvit-meta.git .dependencies/luvit-meta $(IGNORE_EXISTING)
-	# TODO: Replace with stevearc later once this PR is merged
-	#
-	# Reference: https://github.com/stevearc/profile.nvim/pull/8
-	#
-	git clone git@github.com:ColinKennedy/profile.nvim.git .dependencies/profile.nvim $(IGNORE_EXISTING)
 
 api_documentation:
 	nvim -u scripts/make_api_documentation/minimal_init.lua -l scripts/make_api_documentation/main.lua
