@@ -993,20 +993,18 @@ In the graph and data below, lower numbers are better
         local latest = latests.latest.versions.release
         local second_latest = latests.second_latest.versions.release
 
-        file:write(
-            string.format(
-                [[
+        file:write(string.format(
+            [[
 ## General Summary
 
 The most recent run was %s. The previous run was %s. Compared to %s, %s ...
 
 ]],
-                latest,
-                second_latest,
-                latest,
-                second_latest
-            )
-        )
+            latest,
+            second_latest,
+            latest,
+            second_latest
+        ))
 
         file:write(_P.get_concise_speed_comparison(latests.second_latest, latests.latest))
         file:write("\n\n")
@@ -1212,7 +1210,7 @@ function M.write_summary_directory(profiler, events, maximum, options)
     local latests
 
     if latest and second_latest then
-        latests = {latest=latest, second_latest=second_latest}
+        latests = { latest = latest, second_latest = second_latest }
     end
 
     _P.write_summary_readme(artifacts, graphs, readme_path, timing_text, latests)

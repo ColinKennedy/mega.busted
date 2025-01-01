@@ -420,7 +420,7 @@ local function main()
     local root = vim.fs.normalize(vim.fs.joinpath(current_directory, "..", ".."))
     local paths = {
         {
-            source = vim.fs.joinpath(root, "lua", "mega" , "busted", "init.lua"),
+            source = vim.fs.joinpath(root, "lua", "mega", "busted", "init.lua"),
             destination = vim.fs.joinpath(root, "doc", "mega_busted_api.txt"),
         },
         {
