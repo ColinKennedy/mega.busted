@@ -16,11 +16,13 @@ package.path = string.format(
 )
 
 local helper = require("mega.busted._core.profile_using_flamegraph.helper")
-local instrument = require("profile.instrument")
-local profile = require("profile")
+local instrument = require("mega.busted._vendors.profile.instrument")
+local profile = require("mega.busted._vendors.profile")
 local logging = require("mega.logging")
 
 local _LOGGER = logging.get_logger("mega.busted.profiler_runner")
+
+local M = {}
 local _P = {}
 
 --- Add arguments that this file needs in order to time / profile the unittest suite.
@@ -260,7 +262,7 @@ local function run_tests(profiler, options)
 end
 
 --- Run these tests.
-local function main()
+function M.main()
     local options = helper.get_environment_variable_data()
 
     helper.validate_gnuplot()
@@ -275,4 +277,4 @@ local function main()
     run_tests(profiler, options)
 end
 
-main()
+return M

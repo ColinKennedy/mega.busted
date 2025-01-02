@@ -7,13 +7,13 @@
 
 ---@see https://github.com/hishamhm/busted-htest/blob/master/src/busted/outputHandlers/htest.lua
 
-local clock = require("profile.clock")
+local clock = require("mega.busted._vendors.profile.clock")
 local constant = require("mega.busted._core.profile_using_flamegraph.constant")
 local helper = require("mega.busted._core.profile_using_flamegraph.helper")
-local instrument = require("profile.instrument")
+local instrument = require("mega.busted._vendors.profile.instrument")
 local logging = require("mega.logging")
-local profile = require("profile")
-local util = require("profile.util")
+local profile = require("mega.busted._vendors.profile")
+local util = require("mega.busted._vendors.profile.util")
 
 ---@class busted.FlamegraphCallerOptions Control how an output handler runs.
 ---@field release string A version / release tag. e.g. `"v1.2.3"`.
