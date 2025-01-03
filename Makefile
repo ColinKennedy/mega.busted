@@ -27,5 +27,5 @@ luacheck:
 stylua:
 	stylua lua scripts spec
 
-test: clone_git_dependencies
+test:
 	busted .

@@ -3,6 +3,8 @@
 ---@module 'busted.profile_using_flamegraph.timing'
 ---
 
+local constant = require("mega.busted._vendors.profile.constant")
+
 local numeric = require("mega.busted._core.profile_using_flamegraph.numeric")
 local self_timing = require("mega.busted._core.profile_using_flamegraph.self_timing")
 local tabler = require("mega.busted._core.tabler")
@@ -369,8 +371,8 @@ end
 ---@return _ProfilerLine[] # The computed data (that will later become the report).
 ---
 function M.get_profile_report_lines(events, options)
-    local predicate = options.predicate or function()
-        return true
+    local predicate = options.predicate or function(event)
+        return event.cat == constant.Category["function"]
     end
     local threshold = options.threshold or 20
     local functions_by_name, functions, counts = _P.get_totals(events, predicate)

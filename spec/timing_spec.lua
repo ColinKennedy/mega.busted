@@ -7,6 +7,8 @@
 
 local _P = {}
 
+local constant = require("mega.busted._vendors.profile.constant")
+
 local mock_test = require("test_utilities.mock_test")
 local timing = require("busted.profile_using_flamegraph.timing")
 
@@ -22,7 +24,7 @@ after_each(mock_test.reset_loggers)
 ---@return boolean # If `event` was captured by the profiler or not.
 ---
 function _P.is_function(event)
-    return event.cat == "function"
+    return event.cat == constant.Category["function"]
 end
 
 --- Get the timing report for `events` + `threshold`.

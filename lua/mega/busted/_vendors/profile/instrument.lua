@@ -1,5 +1,7 @@
 local clock = require("mega.busted._vendors.profile.clock")
+local constant = require("mega.busted._vendors.profile.constant")
 local util = require("mega.busted._vendors.profile.util")
+
 local M = {}
 
 local rawrequire = require
@@ -69,7 +71,7 @@ local function wrap_function(name, fn)
         pid = util.get_process_id(),
         tid = util.get_thread_id(),
         args = arg_string,
-        cat = "function",
+        cat = constant.Category["function"],
         ph = "X",
         ts = start,
         dur = delta,
@@ -190,6 +192,7 @@ local function instrument(_, name)
   if not vim.tbl_contains(instrument_list, pattern) then
     table.insert(instrument_list, pattern)
   end
+  ---@diagnostic disable-next-line: redundant-parameter
   M.hook_require(name)
   for modname, mod in pairs(all_modules()) do
     if string.match(modname, pattern) then
