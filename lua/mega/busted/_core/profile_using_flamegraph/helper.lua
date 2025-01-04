@@ -731,7 +731,7 @@ function _P.write_flamegraph(profiler, events, path)
     _LOGGER:fmt_info('Writing flamegraph to "%s" path.', path)
     _P.make_parent_directory(path)
 
-    profiler.export(path, events)
+    profiler.write_events_to_file(path, events)
 end
 
 --- Create the gnuplot line-graphs.
