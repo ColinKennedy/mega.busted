@@ -731,6 +731,11 @@ function _P.write_flamegraph(profiler, events, path)
     _LOGGER:fmt_info('Writing flamegraph to "%s" path.', path)
     _P.make_parent_directory(path)
 
+    -- The author of profile.nvim asked to make this method private (but it is allowed).
+    --
+    -- Reference: https://github.com/stevearc/profile.nvim/pull/9#issuecomment-2569956816
+    --
+    ---@diagnostic disable-next-line: invisible
     profiler.write_events_to_file(path, events)
 end
 
