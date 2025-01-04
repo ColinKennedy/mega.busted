@@ -14,23 +14,23 @@ if jit and jit.version then
   local ffi = require("ffi")
 
   if vim.fn.has("win32") == 1 or vim.fn.has("win64") == 1 then
+    ffi.cdef([[
+      typedef unsigned long DWORD;
+      DWORD GetCurrentThreadId();
+    ]])
+
     ---@return number # The current thread's ID number (1-or-more value).
     function M.get_thread_id()
-      ffi.cdef([[
-        typedef unsigned long DWORD;
-        DWORD GetCurrentThreadId();
-      ]])
-
       return ffi.C.GetCurrentThreadId()
     end
   else
+    ffi.cdef([[
+      typedef int pid_t;
+      pid_t gettid();
+    ]])
+
     ---@return number # The current thread's ID number (1-or-more value).
     function M.get_thread_id()
-      ffi.cdef([[
-        typedef int pid_t;
-        pid_t gettid();
-      ]])
-
       return ffi.C.gettid()
     end
   end
