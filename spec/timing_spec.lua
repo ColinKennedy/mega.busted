@@ -9,14 +9,7 @@ local _P = {}
 
 local constant = require("mega.busted._vendors.profile.constant")
 
-local mock_test = require("test_utilities.mock_test")
-local timing = require("busted.profile_using_flamegraph.timing")
-
-before_each(function()
-    mock_test.save_loggers()
-    mock_test.silence_loggers()
-end)
-after_each(mock_test.reset_loggers)
+local timing = require("mega.busted._core.profile_using_flamegraph.timing")
 
 --- Check if the profiler `event` is an auto-profiled function.
 ---
@@ -107,9 +100,9 @@ describe("get_profile_report_as_text", function()
             assert.equal(
                 [[
 ─────────────────────────────────────────────────────
-total-time                                      18.02
+Total-Time                                      18.02
 ─────────────────────────────────────────────────────
-count total-time self-time name
+Count Total-Time Self-Time Name
 ─────────────────────────────────────────────────────
 3     14.00      12.00     multicall
 1     2.02       2.02      another_event_that_is_past
@@ -151,9 +144,9 @@ count total-time self-time name
             assert.equal(
                 [[
 ────────────────────────────────────────────────────────
-total-time                                   30131677.24
+Total-Time                                   30131677.24
 ────────────────────────────────────────────────────────
-count total-time  self-time   name
+Count Total-Time  Self-Time   Name
 ────────────────────────────────────────────────────────
 1     30123412.12 30123412.12 another_event_that_is_past
 1     8255.12     8255.12     first_child
@@ -177,9 +170,9 @@ count total-time  self-time   name
             assert.equal(
                 [[
 ─────────────────────────────────────────────────────
-total-time                                      20.31
+Total-Time                                      20.31
 ─────────────────────────────────────────────────────
-count total-time self-time name
+Count Total-Time Self-Time Name
 ─────────────────────────────────────────────────────
 1     10.00      10.00     outer_most
 1     6.13       6.13      first_child
@@ -204,9 +197,9 @@ count total-time self-time name
             assert.equal(
                 [[
 ─────────────────────────────────────────────────────
-total-time                                      17.02
+Total-Time                                      17.02
 ─────────────────────────────────────────────────────
-count total-time self-time name
+Count Total-Time Self-Time Name
 ─────────────────────────────────────────────────────
 1     10.00      5.00      outer_most
 1     3.00       3.00      first_child
@@ -233,9 +226,9 @@ count total-time self-time name
             assert.equal(
                 [[
 ───────────────────────────────────────────────
-total-time                                17.02
+Total-Time                                17.02
 ───────────────────────────────────────────────
-name                       total-time self-time
+Name                       Total-Time Self-Time
 ───────────────────────────────────────────────
 outer_most                 10.00      5.00
 first_child                3.00       3.00
@@ -262,9 +255,9 @@ second_child               2.00       2.00
             assert.equal(
                 [[
 ──────────────────────────────────────
-total-time                       12.02
+Total-Time                       12.02
 ──────────────────────────────────────
-name                       median mean
+Name                       Median Mean
 ──────────────────────────────────────
 multicall                  3.00   2.67
 another_event_that_is_past 2.02   2.02
