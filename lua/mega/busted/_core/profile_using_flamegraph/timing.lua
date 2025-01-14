@@ -371,9 +371,10 @@ end
 ---@return _ProfilerLine[] # The computed data (that will later become the report).
 ---
 function M.get_profile_report_lines(events, options)
-    local predicate = options.predicate or function(event)
-        return event.cat == constant.Category["function"]
-    end
+    local predicate = options.predicate
+        or function(event)
+            return event.cat == constant.Category["function"]
+        end
     local threshold = options.threshold or 20
     local functions_by_name, functions, counts = _P.get_totals(events, predicate)
 
