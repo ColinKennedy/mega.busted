@@ -11,6 +11,8 @@ local instrument = require("mega.busted._vendors.profile.instrument")
 local logging = require("mega.logging")
 local profile = require("mega.busted._vendors.profile")
 
+local M = {}
+
 local _LOGGER = logging.get_logger("mega.busted.make_standalone_profile")
 
 --- Parse and run Lua `text` source code.
@@ -40,12 +42,19 @@ end
 ---
 ---@param input string[] All of the Lua command(s) to execute.
 ---
-local function main(input)
+function M.main(input)
+    if not input or vim.tbl_isempty(input) then
+        error("Please provide at least one Lua command to execute.", 0)
+    end
+
     local options = helper.get_standalone_environment_variable_data()
 
-    -- NOTE: Don't profile the unittest framework
+    -- NOTE: Don't profile the unittest framework or its dependencies
+    -- TODO: Make common function for this later
     local profiler = profile
-    profiler.ignore("mega.busted*")
+    profiler.ignore("busted*")
+    profiler.ignore("mega.busted.*")
+    profiler.ignore("mega.logging.*")
 
     instrument("*")
 
@@ -56,19 +65,22 @@ local function main(input)
     local events = instrument.get_events()
 
     local root = options.root
-    local benchmarks = vim.fs.joinpath(root, "benchmarks")
+    local name = "standalone"
+    local benchmarks = vim.fs.joinpath(root, "benchmarks", name)
 
-    local all_options = vim.tbl_deep_extend("force", options, { root = vim.fs.joinpath(benchmarks, "all") })
-    ---@cast all_options CommonProfilerOptions
+    if vim.fn.isdirectory(benchmarks) ~= 1 then
+        vim.fn.mkdir(benchmarks, "p")
+    end
 
-    helper.write_standalone_summary_directory(profile, events, nil, all_options)
+    local all_options = vim.tbl_deep_extend("force", options, {
+        release = name,
+        root = benchmarks,
+        timing_threshold = 20,
+    })
+    ---@cast all_options VersionedProfilerOptions
+
+    helper.write_standalone_summary_directory(events, nil, all_options)
     _LOGGER:fmt_info('Finished writing all of "%s" directory.', benchmarks)
 end
 
-
-if not arg or vim.tbl_isempty(arg) then
-    error("Please provide at least one Lua command to execute.", 0)
-end
-
-print('DEBUGPRINT[8]: make_standalone_profile.lua:73: arg=' .. vim.inspect(arg))
-main(arg)
+return M

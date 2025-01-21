@@ -165,6 +165,11 @@ end
 ---    Basic options that can be used by most / any profiler runner.
 ---@field root string
 ---    An absolute path to the directory on-disk where files are written.
+---@field allow_event fun(event: profile.Event): boolean
+---    If this function returns `true` then the event will be considered for
+---    summarizing timing information. If `false` then it may still be used for
+---    other parts or profiling but it will not contribute to "timing.txt", for
+---    example.
 
 ---@class VersionedProfilerOptions : CommonProfilerOptions
 ---    A profile result that is named / has extra metadata.
@@ -273,10 +278,12 @@ function M.main()
 
     helper.validate_gnuplot()
 
-    -- NOTE: Don't profile the unittest framework
+    -- NOTE: Don't profile the unittest framework or its dependencies
+    -- TODO: Make common function for this later
     local profiler = profile
     profiler.ignore("busted*")
-    profiler.ignore("mega.busted*")
+    profiler.ignore("mega.busted.*")
+    profiler.ignore("mega.logging.*")
 
     instrument("*")
 

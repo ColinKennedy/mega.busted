@@ -306,7 +306,7 @@ function _P.get_graph_artifacts(root, maximum)
 
         local data = file:read("*a")
 
-        local success, result = pcall(vim.fn.json_decode, data)
+        local success, result = pcall(vim.json.decode, data)
 
         if not success then
             error(
@@ -396,6 +396,35 @@ function _P.get_latest_timed_event(events)
     error("Unable to find a latest event.", 0)
 end
 
+--- Serialize timing data so we can make it JSON later.
+---
+---@param release string
+---    The current release to make. e.g. `"v1.2.3"`.
+---@param events profile.Event[]
+---    All of the profiler event data to consider. If no events are given, we
+---    will use the global profiler's events instead.
+---@param predicate fun(event: profile.Event): boolean
+---    If this function returns `true` then the event will be considered for
+---    summarizing timing information. If `false` then it may still be used for
+---    other parts or profiling but it will not contribute to "timing.txt", for
+---    example.
+---@return _GraphArtifact
+---
+function _P.get_profile_artifact(release, events, predicate)
+    local cpu = _PROCESSOR
+
+    return {
+        versions = {
+            lua = jit.version,
+            neovim = vim.version(),
+            release = release,
+            uv = vim.uv.version(),
+        },
+        statistics = _P.get_profile_statistics(events, predicate),
+        hardware = { cpu = cpu, platform = vim.loop.os_uname().sysname },
+    }
+end
+
 --- Summarize all of `events` (get the mean, median, etc).
 ---
 --- Raises:
@@ -404,10 +433,15 @@ end
 ---@param events profile.Event[]
 ---    All of the profiler event data to consider. If no events are given, we
 ---    will use the global profiler's events instead.
+---@param predicate fun(event: profile.Event): boolean
+---    If this function returns `true` then the event will be considered for
+---    summarizing timing information. If `false` then it may still be used for
+---    other parts or profiling but it will not contribute to "timing.txt", for
+---    example.
 ---@return _Statistics
 ---    Summary data about a whole suite of profiler data.
 ---
-function _P.get_profile_statistics(events)
+function _P.get_profile_statistics(events, predicate)
     if vim.tbl_isempty(events) then
         error("Events cannot be empty.")
     end
@@ -417,7 +451,7 @@ function _P.get_profile_statistics(events)
     local sum = 0
 
     for _, event in ipairs(events) do
-        if event.cat == constant.Category.test then
+        if predicate(event) then
             local duration = event.dur
             table.insert(durations, duration)
             sum = sum + duration
@@ -819,7 +853,7 @@ function _P.write_graph_artifact(profiler, events, options)
     _P.write_flamegraph(profiler, events, flamegraph_path)
 
     local profile_path = vim.fs.joinpath(directory, _PROFILE_FILE_NAME)
-    _P.write_profile_summary(options.release, events, profile_path)
+    _P.write_profile_summary(options.release, events, profile_path, options.allow_event)
 
     local timing_path = vim.fs.joinpath(directory, _TIMING_FILE_NAME)
     local timing_text = _P.write_timing(events, timing_path, options)
@@ -931,8 +965,13 @@ end
 ---    will use the global profiler's events instead.
 ---@param path string
 ---    An absolute path to the ".../benchmarks/all/profile.json" to create.
+---@param predicate fun(event: profile.Event): boolean
+---    If this function returns `true` then the event will be considered for
+---    summarizing timing information. If `false` then it may still be used for
+---    other parts or profiling but it will not contribute to "timing.txt", for
+---    example.
 ---
-function _P.write_profile_summary(release, events, path)
+function _P.write_profile_summary(release, events, path, predicate)
     _LOGGER:fmt_info('Writing profile summary to "%s" path.', path)
     _P.make_parent_directory(path)
 
@@ -942,19 +981,7 @@ function _P.write_profile_summary(release, events, path)
         error(string.format('Path "%s" could not be exported.', path), 0)
     end
 
-    local cpu = _PROCESSOR
-
-    ---@type _GraphArtifact
-    local data = {
-        versions = {
-            lua = jit.version,
-            neovim = vim.version(),
-            release = release,
-            uv = vim.uv.version(),
-        },
-        statistics = _P.get_profile_statistics(events),
-        hardware = { cpu = cpu, platform = vim.loop.os_uname().sysname },
-    }
+    local data = _P.get_profile_artifact(release, events, predicate)
 
     file:write(vim.json.encode(data))
     file:close()
@@ -995,6 +1022,8 @@ In the graph and data below, lower numbers are better
 
 ]])
 
+    local has_graphs = not vim.tbl_isempty(graphs)
+
     if latests then
         local latest = latests.latest.versions.release
         local second_latest = latests.second_latest.versions.release
@@ -1013,8 +1042,10 @@ The most recent run was %s. The previous run was %s. Compared to %s, %s ...
         ))
 
         file:write(_P.get_concise_speed_comparison(latests.second_latest, latests.latest))
-        file:write("\n\n")
-        file:write("See the graphs and tables below for details\n\n")
+
+        if has_graphs then
+            file:write("See the graphs and tables below for details\n\n")
+        end
     end
 
     local directory = vim.fs.normalize(vim.fs.dirname(path))
@@ -1186,6 +1217,7 @@ end
 ---    All options used to visualize profiler results as line graph data.
 ---
 function M.write_busted_summary_directory(profiler, events, maximum, options)
+    options.allow_event = options.allow_event or function(event) return event.cat == constant.Category.test end
     local release = options.release
     local root = options.root
     _LOGGER:fmt_info('Now writing profiler "%s" results to "%s" path.', release, root)
@@ -1237,6 +1269,56 @@ function M.write_busted_summary_directory(profiler, events, maximum, options)
     end
 
     _P.write_summary_readme(artifacts, graphs, readme_path, timing_text, latests)
+end
+
+--- Make a profile summary for `events` according to `options`. Cap them at `maximum`.
+---
+--- Raises:
+---    If any input is incorrect (e.g. `maximum` is a negative number).
+---
+---@param events profile.Event[]?
+---    All of the profiler event data to consider. If no events are given, we
+---    will use the global profiler's events instead.
+---@param maximum number?
+---    A 1-or-more value. The number of samples to collect for graphing. If
+---    there are more samples than `maximum` allows, the later smples are
+---    preferred. Note: It is unwise to set this number higher than the default
+---    (35). Experimentation showed that the X-axis of the graph becomes
+---    unreadable after 35.
+---@param options VersionedProfilerOptions
+---    Extra controls to change how files are written to-disk.
+---
+function M.write_standalone_summary_directory(events, maximum, options)
+    options.allow_event = options.allow_event or function(event)
+        return event.dur and event.cat == profile_constant.Category["function"]
+    end
+    local root = options.root
+    maximum = maximum or _DEFAULT_MAXIMUM_ARTIFACTS
+
+    if maximum < 1 then
+        error(string.format('Maximum "%s" must be >= 1.', maximum), 0)
+    end
+
+    events = events or instrument.get_events()
+    events = vim.fn.sort(events, function(left, right)
+        return left.ts < right.ts
+    end)
+
+    ---@type VersionedProfilerOptions
+    local all_options = {root="<Not found>", release="standalone", timing_threshold=maximum}
+    all_options = vim.tbl_deep_extend("force", all_options, options)
+
+    local timing_path = vim.fs.joinpath(options.root, _TIMING_FILE_NAME)
+    local timing_text = _P.write_timing(events, timing_path, options)
+    local readme_path = vim.fs.joinpath(root, "README.md")
+    local latests = nil
+
+    local artifacts = {_P.get_profile_artifact(
+        all_options.release,
+        events,
+        all_options.allow_event
+    )}
+    _P.write_summary_readme(artifacts, {}, readme_path, timing_text, latests)
 end
 
 --- Write all files for the "benchmarks/tags" directory.
