@@ -1,6 +1,8 @@
-- Allow running just the flamegraph + .png stuff. Basically just a "run once" setting
+- Add .png generation to standalone
+- Make sure the standalore folder looks like the busted one
 - Make sure that standalone can also capture `require`, `autocmd` and other
   events. Not just functions
+- Add unittest for standalone
 
 - Allow profiling Neovim's startup, somehow
  - I think this already works. Just document the process

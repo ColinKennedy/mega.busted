@@ -80,6 +80,8 @@ function M.main(input)
     ---@cast all_options VersionedProfilerOptions
 
     helper.write_standalone_summary_directory(events, nil, all_options)
+    helper.write_flamegraph(profiler, events, vim.fs.joinpath(benchmarks, helper.FileName.flamegraph))
+    helper.write_profile_summary(all_options.release, events, vim.fs.joinpath(benchmarks, helper.FileName.profile), all_options.allow_event)
     _LOGGER:fmt_info('Finished writing all of "%s" directory.', benchmarks)
 end
 

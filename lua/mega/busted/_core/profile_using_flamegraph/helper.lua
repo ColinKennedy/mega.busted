@@ -61,14 +61,14 @@ local _LOGGER = logging.get_logger("mega.busted.profile_using_flamegraph.helper"
 local _P = {}
 local M = {}
 
+M.FileName = { flamegraph = "flamegraph.json", profile = "profile.json" }
+
 -- NOTE: The X-axis gets crowded if you include too many points so we cap it
 -- before it can get to that point
 --
 local _DEFAULT_MAXIMUM_ARTIFACTS = 35
 local _TAG_SEPARATOR = ","
 
-local _FLAMEGRAPH_FILE_NAME = "flamegraph.json"
-local _PROFILE_FILE_NAME = "profile.json"
 local _TIMING_FILE_NAME = "timing.txt"
 
 local _MEAN_SCRIPT_TEMPLATE = [[
@@ -288,7 +288,7 @@ function _P.get_graph_artifacts(root, maximum)
     ---@type _GraphArtifact[]
     local output = {}
 
-    local template = vim.fs.joinpath(root, "*", _PROFILE_FILE_NAME)
+    local template = vim.fs.joinpath(root, "*", M.FileName.profile)
 
     local all_paths = _P.get_sorted_datetime_paths(vim.fn.glob(template, false, true))
     local count = #all_paths
@@ -762,7 +762,7 @@ end
 ---@param events profile.Event[] The events to write to-disk.
 ---@param path string An absolute path to a flamegraph.json to create.
 ---
-function _P.write_flamegraph(profiler, events, path)
+function M.write_flamegraph(profiler, events, path)
     _LOGGER:fmt_info('Writing flamegraph to "%s" path.', path)
     _P.make_parent_directory(path)
 
@@ -849,11 +849,11 @@ function _P.write_graph_artifact(profiler, events, options)
         vim.fs.joinpath(options.root, string.format("%s-%s", options.release, os.date("%Y_%m_%d-%H_%M_%S")))
     vim.fn.mkdir(directory, "p")
 
-    local flamegraph_path = vim.fs.joinpath(directory, _FLAMEGRAPH_FILE_NAME)
-    _P.write_flamegraph(profiler, events, flamegraph_path)
+    local flamegraph_path = vim.fs.joinpath(directory, M.FileName.flamegraph)
+    M.write_flamegraph(profiler, events, flamegraph_path)
 
-    local profile_path = vim.fs.joinpath(directory, _PROFILE_FILE_NAME)
-    _P.write_profile_summary(options.release, events, profile_path, options.allow_event)
+    local profile_path = vim.fs.joinpath(directory, M.FileName.profile)
+    M.write_profile_summary(options.release, events, profile_path, options.allow_event)
 
     local timing_path = vim.fs.joinpath(directory, _TIMING_FILE_NAME)
     local timing_text = _P.write_timing(events, timing_path, options)
@@ -971,7 +971,7 @@ end
 ---    other parts or profiling but it will not contribute to "timing.txt", for
 ---    example.
 ---
-function _P.write_profile_summary(release, events, path, predicate)
+function M.write_profile_summary(release, events, path, predicate)
     _LOGGER:fmt_info('Writing profile summary to "%s" path.', path)
     _P.make_parent_directory(path)
 
