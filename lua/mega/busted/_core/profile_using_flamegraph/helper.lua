@@ -797,7 +797,7 @@ end
 ---@param events profile.Event[]
 ---    All of the profiler event data to consider. If no events are given, we
 ---    will use the global profiler's events instead.
----@param options ProfilerOptions
+---@param options VersionedProfilerOptions
 ---    All options used to visualize profiler results as line graph data.
 ---@return string
 ---    An absolute path to the created flamegraph.json file.
@@ -1062,7 +1062,7 @@ end
 --- TODO: Docstring
 ---@param events profile.Event[]
 ---@param path string
----@param options ProfilerOptions
+---@param options VersionedProfilerOptions
 ---@return string
 function _P.write_timing(events, path, options)
     _LOGGER:fmt_info('Writing "%s" timing file.', path)
@@ -1087,16 +1087,11 @@ end
 --- Raises:
 ---     If a required environment variable was not defined correctly.
 ---
----@return ProfilerOptions
+---@return BustedProfilerOptions
 ---    All options used to visualize profiler results as line graph data.
 ---
-function M.get_environment_variable_data()
-    local root = os.getenv("BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH")
-
-    if not root then
-        error("Cannot write profile results. $BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH is not defined.", 0)
-    end
-
+function M.get_busted_environment_variable_data()
+    local base = M.get_standalone_environment_variable_data()
     local release = os.getenv("BUSTED_PROFILER_FLAMEGRAPH_VERSION")
 
     if not release then
@@ -1107,16 +1102,38 @@ function M.get_environment_variable_data()
 
     local maximum_tries = _P.validate_maximum_tries(os.getenv("BUSTED_PROFILER_MAXIMUM_TRIES"))
 
-    return {
+    local output = vim.tbl_deep_extend("force", base, {
         allowed_tags = _P.get_allowed_tags_from_environment_variable(),
         keep_old_tag_directories = os.getenv("BUSTED_PROFILER_KEEP_OLD_TAG_DIRECTORIES") ~= "1",
         keep_temporary_files = os.getenv("BUSTED_PROFILER_KEEP_TEMPORARY_FILES") == "1",
         maximum_tries = maximum_tries,
         release = release,
-        root = root,
+        root = base.root,
         table_style = timing.TableStyle.github,
         timing_threshold = _P.get_timing_threshold(),
-    }
+    })
+
+    ---@cast output BustedProfilerOptions
+
+    return output
+end
+
+--- Get the output directory for the standalone profile command.
+---
+--- Raises:
+---     If a required environment variable was not defined correctly.
+---
+---@return CommonProfilerOptions
+---    All directory on-disk where profile results will be stored.
+---
+function M.get_standalone_environment_variable_data()
+    local root = os.getenv("BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH")
+
+    if root then
+        return {root=root}
+    end
+
+    error("Cannot write profile results. $BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH is not defined.", 0)
 end
 
 --- Make sure `gnuplot` is installed and is accessible.
@@ -1164,10 +1181,10 @@ end
 ---    preferred. Note: It is unwise to set this number higher than the default
 ---    (35). Experimentation showed that the X-axis of the graph becomes
 ---    unreadable after 35.
----@param options ProfilerOptions
+---@param options BustedProfilerOptions
 ---    All options used to visualize profiler results as line graph data.
 ---
-function M.write_summary_directory(profiler, events, maximum, options)
+function M.write_busted_summary_directory(profiler, events, maximum, options)
     local release = options.release
     local root = options.root
     _LOGGER:fmt_info('Now writing profiler "%s" results to "%s" path.', release, root)
@@ -1252,7 +1269,7 @@ end
 ---    preferred. Note: It is unwise to set this number higher than the default
 ---    (35). Experimentation showed that the X-axis of the graph becomes
 ---    unreadable after 35.
----@param options ProfilerOptions
+---@param options BustedProfilerOptions
 ---    All options used to visualize profiler results as line graph data.
 ---
 function M.write_tags_directory(profiler, events, maximum, options)
@@ -1354,7 +1371,7 @@ function M.write_tags_directory(profiler, events, maximum, options)
     for tag, events_ in pairs(events_by_tag) do
         if _P.is_allowed_tag(tag, allowed_tags) and not vim.tbl_isempty(events_) then
             local directory = vim.fs.joinpath(root, tag)
-            M.write_summary_directory(
+            M.write_busted_summary_directory(
                 profiler,
                 events_,
                 maximum,

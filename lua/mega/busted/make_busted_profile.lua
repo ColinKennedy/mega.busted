@@ -2,7 +2,7 @@
 ---
 --- It runs tests multiple times and, each time, records profiler and timing results.
 ---
----@module 'busted.profiler_runner'
+---@module 'mega.busted.make_busted_profile'
 ---
 
 local _CURRENT_DIRECTORY =
@@ -20,7 +20,7 @@ local instrument = require("mega.busted._vendors.profile.instrument")
 local profile = require("mega.busted._vendors.profile")
 local logging = require("mega.logging")
 
-local _LOGGER = logging.get_logger("mega.busted.profiler_runner")
+local _LOGGER = logging.get_logger("mega.busted.make_busted_profile")
 
 local M = {}
 local _P = {}
@@ -161,7 +161,19 @@ function _P.run_busted_suite(runner, options)
     end)
 end
 
----@class ProfilerOptions
+---@class CommonProfilerOptions
+---    Basic options that can be used by most / any profiler runner.
+---@field root string
+---    An absolute path to the directory on-disk where files are written.
+
+---@class VersionedProfilerOptions : CommonProfilerOptions
+---    A profile result that is named / has extra metadata.
+---@field release string
+---    A version / release tag. e.g. `"v1.2.3"`.
+---@field timing_threshold integer
+---    The number of (slowest function) entries to write in the output.
+
+---@class BustedProfilerOptions : VersionedProfilerOptions
 ---    All options used to visualize profiler results as line graph data.
 ---@field allowed_tags string[]
 ---    Get the allowes tags that may write to disk. e.g. `{"foo.*bar", "thing"}`.
@@ -177,14 +189,8 @@ end
 ---    This controls the number of times that tests can run before we determine
 ---    that we've found a "fastest" test run. The higher the value, the longer
 ---    but more accurate this function becomes.
----@field release string
----    A version / release tag. e.g. `"v1.2.3"`.
----@field root string
----    An absolute path to the directory on-disk where files are written.
 ---@field table_style _TableStyle
 ---    Profiler summary data will be displayed as a table in this style.
----@field timing_threshold integer
----    The number of (slowest function) entries to write in the output.
 
 --- Run the unittest multiple times until a "fastest time" is found.
 ---
@@ -205,7 +211,7 @@ end
 ---
 ---@param profiler Profiler
 ---    The object used to record function call times.
----@param options ProfilerOptions
+---@param options BustedProfilerOptions
 ---    All options used to visualize profiler results as line graph data.
 ---
 local function run_tests(profiler, options)
@@ -246,7 +252,7 @@ local function run_tests(profiler, options)
     end
 
     local benchmarks = vim.fs.joinpath(root, "benchmarks")
-    helper.write_summary_directory(
+    helper.write_busted_summary_directory(
         profile,
         fastest_events,
         nil,
@@ -263,7 +269,7 @@ end
 
 --- Run these tests.
 function M.main()
-    local options = helper.get_environment_variable_data()
+    local options = helper.get_busted_environment_variable_data()
 
     helper.validate_gnuplot()
 

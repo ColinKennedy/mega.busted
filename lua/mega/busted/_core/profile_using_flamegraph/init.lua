@@ -224,7 +224,7 @@ return function(options)
             _LOGGER:info("Profiling was stopped. Now writing to disk.")
             local benchmarks = vim.fs.joinpath(root, "benchmarks")
             local events = instrument.get_events()
-            helper.write_summary_directory(
+            helper.write_busted_summary_directory(
                 profile,
                 events,
                 nil,
