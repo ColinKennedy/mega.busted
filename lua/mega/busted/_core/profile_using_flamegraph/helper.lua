@@ -61,15 +61,17 @@ local _LOGGER = logging.get_logger("mega.busted.profile_using_flamegraph.helper"
 local _P = {}
 local M = {}
 
-M.FileName = { flamegraph = "flamegraph.json", profile = "profile.json" }
+M.FileName = {
+    flamegraph = "flamegraph.json",
+    profile = "profile.json",
+    timing = "timing.md",
+}
 
 -- NOTE: The X-axis gets crowded if you include too many points so we cap it
 -- before it can get to that point
 --
 local _DEFAULT_MAXIMUM_ARTIFACTS = 35
 local _TAG_SEPARATOR = ","
-
-local _TIMING_FILE_NAME = "timing.txt"
 
 local _MEAN_SCRIPT_TEMPLATE = [[
 set xlabel "Release"
@@ -855,7 +857,7 @@ function _P.write_graph_artifact(profiler, events, options)
     local profile_path = vim.fs.joinpath(directory, M.FileName.profile)
     M.write_profile_summary(options.release, events, profile_path, options.allow_event)
 
-    local timing_path = vim.fs.joinpath(directory, _TIMING_FILE_NAME)
+    local timing_path = vim.fs.joinpath(directory, M.FileName.timing)
     local timing_text = _P.write_timing(events, timing_path, options)
 
     return flamegraph_path, profile_path, timing_path, timing_text
@@ -1308,7 +1310,7 @@ function M.write_standalone_summary_directory(events, maximum, options)
     local all_options = {root="<Not found>", release="standalone", timing_threshold=maximum}
     all_options = vim.tbl_deep_extend("force", all_options, options)
 
-    local timing_path = vim.fs.joinpath(options.root, _TIMING_FILE_NAME)
+    local timing_path = vim.fs.joinpath(options.root, M.FileName.timing)
     local timing_text = _P.write_timing(events, timing_path, options)
     local readme_path = vim.fs.joinpath(root, "README.md")
     local latests = nil
