@@ -41,12 +41,6 @@ end
 ---@param input string[] All of the Lua command(s) to execute.
 ---
 local function main(input)
-    input = input or arg
-
-    if not input then
-        error("Please provide at least one Lua command to execute.", 0)
-    end
-
     local options = helper.get_standalone_environment_variable_data()
 
     -- NOTE: Don't profile the unittest framework
@@ -56,7 +50,7 @@ local function main(input)
     instrument("*")
 
     profiler.start()
-    _run_lua_commands(arg)
+    _run_lua_commands(input)
     profiler.stop()
 
     local events = instrument.get_events()
@@ -72,4 +66,9 @@ local function main(input)
 end
 
 
-main()
+if not arg or vim.tbl_isempty(arg) then
+    error("Please provide at least one Lua command to execute.", 0)
+end
+
+print('DEBUGPRINT[8]: make_standalone_profile.lua:73: arg=' .. vim.inspect(arg))
+main(arg)
