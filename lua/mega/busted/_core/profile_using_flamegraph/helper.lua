@@ -376,29 +376,6 @@ function _P.get_latest_neovim_version(artifacts)
     return output
 end
 
---- Search `events` for the last event that contains CPU time data.
----
---- Raises:
----     If `events` has no CPU time data.
----
----@param events profile.Event[]
----    All of the profiler event data to consider. If no events are given, we
----    will use the global profiler's events instead.
----@return profile.Event
----    The found, latest event.
----
-function _P.get_latest_timed_event(events)
-    for index = #events, 1, -1 do
-        local event = events[index]
-
-        if event.ts and event.dur then
-            return event
-        end
-    end
-
-    error("Unable to find a latest event.", 0)
-end
-
 --- Serialize timing data so we can make it JSON later.
 ---
 ---@param release string
