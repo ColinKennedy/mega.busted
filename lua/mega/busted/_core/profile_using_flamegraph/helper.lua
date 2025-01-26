@@ -1171,7 +1171,7 @@ function M.get_standalone_environment_variable_data()
     local root = os.getenv("BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH")
 
     if root then
-        return {root=root}
+        return { root = root }
     end
 
     error("Cannot write profile results. $BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH is not defined.", 0)
@@ -1226,7 +1226,10 @@ end
 ---    All options used to visualize profiler results as line graph data.
 ---
 function M.write_busted_summary_directory(profiler, events, maximum, options)
-    options.allow_event = options.allow_event or function(event) return event.cat == constant.Category.test end
+    options.allow_event = options.allow_event
+        or function(event)
+            return event.cat == constant.Category.test
+        end
     local release = options.release
     local root = options.root
     _LOGGER:fmt_info('Now writing profiler "%s" results to "%s" path.', release, root)
@@ -1298,9 +1301,10 @@ end
 ---    Extra controls to change how files are written to-disk.
 ---
 function M.write_standalone_summary_directory(events, maximum, options)
-    options.allow_event = options.allow_event or function(event)
-        return event.dur and event.cat == profile_constant.Category["function"]
-    end
+    options.allow_event = options.allow_event
+        or function(event)
+            return event.dur and event.cat == profile_constant.Category["function"]
+        end
     local root = options.root
     maximum = maximum or _DEFAULT_MAXIMUM_ARTIFACTS
 
@@ -1314,7 +1318,7 @@ function M.write_standalone_summary_directory(events, maximum, options)
     end)
 
     ---@type VersionedProfilerOptions
-    local all_options = {root="<Not found>", release="standalone", timing_threshold=maximum}
+    local all_options = { root = "<Not found>", release = "standalone", timing_threshold = maximum }
     all_options = vim.tbl_deep_extend("force", all_options, options)
 
     local timing_path = vim.fs.joinpath(options.root, M.FileName.timing)
@@ -1322,11 +1326,7 @@ function M.write_standalone_summary_directory(events, maximum, options)
     local readme_path = vim.fs.joinpath(root, "README.md")
     local latests = nil
 
-    local artifacts = {_P.get_profile_artifact(
-        all_options.release,
-        events,
-        all_options.allow_event
-    )}
+    local artifacts = { _P.get_profile_artifact(all_options.release, events, all_options.allow_event) }
     _P.write_summary_readme(artifacts, {}, readme_path, timing_text, latests)
 end
 
