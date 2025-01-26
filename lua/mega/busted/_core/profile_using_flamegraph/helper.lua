@@ -307,6 +307,7 @@ function _P.get_graph_artifacts(root, maximum)
         end
 
         local data = file:read("*a")
+        file:close()
 
         local success, result = pcall(vim.json.decode, data)
 
@@ -657,7 +658,6 @@ function _P.copy_file_to_directory(source, destination)
     end
 
     local data = source_file:read("*a")
-
     source_file:close()
 
     local destination_file = io.open(vim.fs.joinpath(destination, vim.fn.fnamemodify(source, ":t")), "w")
@@ -754,7 +754,6 @@ function _P.write_data_to_file(data, path)
     end
 
     file:write(data)
-
     file:close()
 end
 
@@ -1054,6 +1053,8 @@ The most recent run was %s. The previous run was %s. Compared to %s, %s ...
 
     for _, graph in ipairs(graphs) do
         if vim.fs.normalize(vim.fs.dirname(graph.image_path)) ~= directory then
+            file:close()
+
             error(
                 string.format(
                     'Path "%s" is not relative to "%s". Cannot add it to the README.md',
@@ -1091,6 +1092,8 @@ The most recent run was %s. The previous run was %s. Compared to %s, %s ...
             )
         )
     end
+
+    file:close()
 end
 
 --- TODO: Docstring
