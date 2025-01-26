@@ -194,6 +194,11 @@ end
 ---    This controls the number of times that tests can run before we determine
 ---    that we've found a "fastest" test run. The higher the value, the longer
 ---    but more accurate this function becomes.
+---@field minimum_samples boolean
+---    If `false` then .png files are only written if there is enough data to
+---    form a line / meaningful visual output. If `true` then the .png files
+---    are always written, even if they'd produce blank graphs. Most of the
+---    time you want this to be `false`, `true` is meant for debugging.
 ---@field table_style _TableStyle
 ---    Profiler summary data will be displayed as a table in this style.
 

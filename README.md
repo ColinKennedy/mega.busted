@@ -41,8 +41,9 @@ debug an issue.
 
 | Name                                     | Default | Description                                                                                                                  |
 |------------------------------------------|---------|------------------------------------------------------------------------------------------------------------------------------|
+| BUSTED_PROFILER_GRAPH_MINIMUM_SAMPLES | 2 | The number of data-points for `.png` graph files to be written to-disk. Use `0` to always write to-disk                               |
 | BUSTED_PROFILER_KEEP_OLD_TAG_DIRECTORIES | 0       | If 0, tagged unittests that are no longer in-use will be auto-deleted. If 1, they are left untouched                         |
-| BUSTED_PROFILER_KEEP_TEMPORARY_FILES     | 0       | If 0, any intermediary files during profiling are deleted. Otherwise don't delete them. This is useful for debugging issues. |
+| BUSTED_PROFILER_KEEP_TEMPORARY_FILES     | 0       | If 0, any intermediary files during profiling are deleted. Otherwise don't delete them. This is useful for debugging issues  |
 | BUSTED_PROFILER_MAXIMUM_TRIES            | 10      | The number of consecutive wins that a test suite must get before it that run is considered "fastest"                         |
 
 

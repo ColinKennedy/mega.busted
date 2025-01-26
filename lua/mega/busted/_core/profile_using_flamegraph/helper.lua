@@ -1118,8 +1118,19 @@ function M.get_busted_environment_variable_data()
 
     local maximum_tries = _P.validate_maximum_tries(os.getenv("BUSTED_PROFILER_MAXIMUM_TRIES"))
 
+    local minimum_samples_text = os.getenv("BUSTED_PROFILER_GRAPH_MINIMUM_SAMPLES") or "2"
+    local minimum_samples = tonumber(minimum_samples_text)
+
+    if not minimum_samples then
+        error(
+            string.format('Samples "%s" is not a number. Cannot continue.', minimum_samples_text),
+            0
+        )
+    end
+
     local output = vim.tbl_deep_extend("force", base, {
         allowed_tags = _P.get_allowed_tags_from_environment_variable(),
+        minimum_samples = minimum_samples,
         keep_old_tag_directories = os.getenv("BUSTED_PROFILER_KEEP_OLD_TAG_DIRECTORIES") ~= "1",
         keep_temporary_files = os.getenv("BUSTED_PROFILER_KEEP_TEMPORARY_FILES") == "1",
         maximum_tries = maximum_tries,
@@ -1247,7 +1258,20 @@ function M.write_busted_summary_directory(profiler, events, maximum, options)
         )
     end
 
-    local graphs = _P.write_graph_images(artifacts, root, options.keep_temporary_files)
+    ---@type _GnuplotData[]
+    local graphs = {}
+    local count = #artifacts
+
+    if count >= options.minimum_samples then
+        graphs = _P.write_graph_images(artifacts, root, options.keep_temporary_files)
+    else
+        _LOGGER:fmt_info(
+            'Skipped writing .png files because graph samples are too low. '
+            .. 'We need "%d" or more" samples but got "%d" samples.',
+            options.minimum_samples,
+            count
+        )
+    end
 
     local latests
 
