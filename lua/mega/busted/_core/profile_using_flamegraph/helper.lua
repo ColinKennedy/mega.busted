@@ -1068,6 +1068,10 @@ The most recent run was %s. The previous run was %s. Compared to %s, %s ...
         file:write(string.format('<p align="center"><img src="%s"/></p>\n\n\n', vim.fs.basename(graph.image_path)))
     end
 
+    if vim.tbl_isempty(graphs) then
+        file:write("\n")
+    end
+
     file:write(string.format("## Most Recent Timing\n\n%s\n\n\n", timing_text))
 
     file:write([[
