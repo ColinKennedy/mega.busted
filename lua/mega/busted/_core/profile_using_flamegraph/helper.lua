@@ -1289,7 +1289,7 @@ function M.write_standalone_summary_directory(events, maximum, options)
 
     events = events or instrument.get_events()
     events = vim.fn.sort(events, function(left, right)
-        return left.ts < right.ts
+        return left.ts > right.ts
     end)
 
     ---@type VersionedProfilerOptions
