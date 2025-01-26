@@ -1122,10 +1122,7 @@ function M.get_busted_environment_variable_data()
     local minimum_samples = tonumber(minimum_samples_text)
 
     if not minimum_samples then
-        error(
-            string.format('Samples "%s" is not a number. Cannot continue.', minimum_samples_text),
-            0
-        )
+        error(string.format('Samples "%s" is not a number. Cannot continue.', minimum_samples_text), 0)
     end
 
     local output = vim.tbl_deep_extend("force", base, {
@@ -1266,8 +1263,8 @@ function M.write_busted_summary_directory(profiler, events, maximum, options)
         graphs = _P.write_graph_images(artifacts, root, options.keep_temporary_files)
     else
         _LOGGER:fmt_info(
-            'Skipped writing .png files because graph samples are too low. '
-            .. 'We need "%d" or more" samples but got "%d" samples.',
+            "Skipped writing .png files because graph samples are too low. "
+                .. 'We need "%d" or more" samples but got "%d" samples.',
             options.minimum_samples,
             count
         )
