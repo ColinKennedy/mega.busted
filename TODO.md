@@ -1,4 +1,3 @@
-- Add .png generation to standalone
 - Make sure that standalone can also capture `require`, `autocmd` and other
   events. Not just functions
 - Add unittest for standalone

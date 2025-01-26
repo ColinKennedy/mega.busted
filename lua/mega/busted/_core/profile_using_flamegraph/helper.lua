@@ -465,12 +465,10 @@ function _P.get_profile_statistics(events, predicate)
         error(string.format('Durations is empty. Event count is "%s". Cannot continue.', #events), 0)
     end
 
-    local last_event = _P.get_latest_timed_event(events)
-
     return {
         median = numeric.get_median(durations),
         mean = sum / #durations,
-        total = last_event.ts + last_event.dur,
+        total = sum,
         standard_deviation = _P.get_standard_deviation(durations),
     }
 end
