@@ -1084,7 +1084,7 @@ The most recent run was %s. The previous run was %s. Compared to %s, %s ...
     for _, artifact in ipairs(artifacts) do
         file:write(
             string.format(
-                "| %s | %s | %s | %s | %s | %s | %s | %s |\n",
+                "| %s | %s | %s | %s | %.2f | %.2f | %.2f | %.2f |\n",
                 artifact.versions.release,
                 artifact.hardware.platform,
                 artifact.hardware.cpu,
