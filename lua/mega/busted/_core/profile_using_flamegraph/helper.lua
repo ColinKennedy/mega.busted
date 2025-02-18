@@ -57,15 +57,17 @@ local _LOGGER = logging.get_logger("mega.busted.profile_using_flamegraph.helper"
 local _P = {}
 local M = {}
 
+_P.FileName = {
+    flamegraph = "flamegraph.json",
+    profile = "profile.json",
+    timing = "timing.json",
+}
+
 -- NOTE: The X-axis gets crowded if you include too many points so we cap it
 -- before it can get to that point
 --
 local _DEFAULT_MAXIMUM_ARTIFACTS = 35
 local _TAG_SEPARATOR = ","
-
-local _FLAMEGRAPH_FILE_NAME = "flamegraph.json"
-local _PROFILE_FILE_NAME = "profile.json"
-local _TIMING_FILE_NAME = "timing.txt"
 
 local _MEAN_SCRIPT_TEMPLATE = [[
 set xlabel "Release"
@@ -259,10 +261,6 @@ function _P.get_directory_name_data(text)
         table.insert(output, tonumber(number_text))
     end
 
-    if #output < 9 then
-        error(string.format('Text "%s" did not match "vMAJOR.MINOR.PATCH-YYYY_MM_DD-HH_MM_SS" pattern.', text), 0)
-    end
-
     return output
 end
 
@@ -284,7 +282,7 @@ function _P.get_graph_artifacts(root, maximum)
     ---@type _GraphArtifact[]
     local output = {}
 
-    local template = vim.fs.joinpath(root, "*", _PROFILE_FILE_NAME)
+    local template = vim.fs.joinpath(root, "*", _P.FileName.profile)
 
     local all_paths = _P.get_sorted_datetime_paths(vim.fn.glob(template, false, true))
     local count = #all_paths
@@ -400,20 +398,25 @@ end
 ---@param events profile.Event[]
 ---    All of the profiler event data to consider. If no events are given, we
 ---    will use the global profiler's events instead.
+---@param options {predicate: fun(event: profile.Event): boolean}
+---    Control how this function summarizes `events` data.
 ---@return _Statistics
 ---    Summary data about a whole suite of profiler data.
 ---
-function _P.get_profile_statistics(events)
+function _P.get_profile_statistics(events, options)
     if vim.tbl_isempty(events) then
         error("Events cannot be empty.")
     end
 
+    local predicate = options.predicate or function()
+        return true
+    end
     ---@type number[]
     local durations = {}
     local sum = 0
 
     for _, event in ipairs(events) do
-        if event.cat == constant.Category.test then
+        if predicate(event) then
             local duration = event.dur
             table.insert(durations, duration)
             sum = sum + duration
@@ -448,9 +451,8 @@ function _P.get_simple_environment_variable_data()
         error("Cannot write profile results. $BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH is not defined.", 0)
     end
 
-    return {root=root}
+    return { root = root }
 end
-
 
 --- Strip unnecessary information from `version`.
 ---
@@ -787,7 +789,12 @@ function _P.write_gnuplot_images(artifacts, graphs)
 
         for _, artifact in ipairs(artifacts) do
             if vim.version.eq(_P.get_simple_version(artifact.versions.neovim), neovim_version) then
-                file:write(string.format("%s %f\n", artifact.versions.release, gnuplot.data_getter(artifact)))
+                -- NOTE: For some reason gnuplot really doesn't handle "_"
+                -- well. So we replace it with something easier to read.
+                --
+                local x_axis_label = (artifact.versions.release:gsub("_", "-"))
+
+                file:write(string.format("%s %f\n", x_axis_label, gnuplot.data_getter(artifact)))
             end
         end
 
@@ -837,12 +844,13 @@ function _P.write_graph_artifact(profiler, events, options)
 
     vim.fn.mkdir(directory, "p")
 
-    local flamegraph_path = vim.fs.joinpath(directory, _FLAMEGRAPH_FILE_NAME)
+    local flamegraph_path = vim.fs.joinpath(directory, _P.FileName.flamegraph)
     _P.write_flamegraph(profiler, events, flamegraph_path)
 
-    local profile_path = vim.fs.joinpath(directory, _PROFILE_FILE_NAME)
-    _P.write_profile_summary(options.release or datetime, events, profile_path)
-    local timing_path = vim.fs.joinpath(directory, _TIMING_FILE_NAME)
+    local profile_path = vim.fs.joinpath(directory, _P.FileName.profile)
+    local statistics = _P.get_profile_statistics(events, { predicate = options.event_filter })
+    _P.write_profile_summary(options.release or datetime, statistics, profile_path)
+    local timing_path = vim.fs.joinpath(directory, _P.FileName.timing)
     local timing_text = _P.write_timing(events, timing_path, options)
 
     return flamegraph_path, profile_path, timing_path, timing_text
@@ -947,13 +955,12 @@ end
 ---
 ---@param release string
 ---    The current release to make. e.g. `"v1.2.3"`.
----@param events profile.Event[]
----    All of the profiler event data to consider. If no events are given, we
----    will use the global profiler's events instead.
+---@param statistics _Statistics
+---    Summary data about a whole suite of profiler data.
 ---@param path string
 ---    An absolute path to the ".../benchmarks/all/profile.json" to create.
 ---
-function _P.write_profile_summary(release, events, path)
+function _P.write_profile_summary(release, statistics, path)
     _LOGGER:fmt_info('Writing profile summary to "%s" path.', path)
     _P.make_parent_directory(path)
 
@@ -973,7 +980,7 @@ function _P.write_profile_summary(release, events, path)
             release = release,
             uv = vim.uv.version(),
         },
-        statistics = _P.get_profile_statistics(events),
+        statistics = statistics,
         hardware = { cpu = cpu, platform = vim.loop.os_uname().sysname },
     }
 
@@ -1067,7 +1074,7 @@ The most recent run was %s. The previous run was %s. Compared to %s, %s ...
     for _, artifact in ipairs(artifacts) do
         file:write(
             string.format(
-                "| %s | %s | %s | %s | %s | %s | %s | %s |\n",
+                "| %s | %s | %s | %s | %s | %.2f | %.2f | %.2f |\n",
                 artifact.versions.release,
                 artifact.hardware.platform,
                 artifact.hardware.cpu,
@@ -1148,7 +1155,7 @@ end
 function M.get_standalone_environment_variable_data()
     local options = _P.get_simple_environment_variable_data()
 
-    local result = vim.tbl_deep_extend("force", options, {timing_threshold = _P.get_timing_threshold() })
+    local result = vim.tbl_deep_extend("force", options, { timing_threshold = _P.get_timing_threshold() })
     ---@cast result StandaloneProfilerOptions
 
     return result
@@ -1203,6 +1210,10 @@ end
 ---    All options used to visualize profiler results as line graph data.
 ---
 function M.write_busted_summary_directory(profiler, events, maximum, options)
+    options.event_filter = options.event_filter
+        or function(event)
+            return event.cat == constant.Category.test
+        end
     local root = options.root
     _LOGGER:fmt_info('Now writing profiler results to "%s" path.', root)
     maximum = maximum or _DEFAULT_MAXIMUM_ARTIFACTS
@@ -1291,11 +1302,13 @@ end
 ---    All options used to visualize profiler results as line graph data.
 ---
 function M.write_standalone_summary_directory(profiler, events, maximum, options)
-    options = vim.tbl_deep_extend(
-        "force",
-        options,
-        {allowed_tags={}, keep_old_tag_directories=false}
-    )
+    options = vim.tbl_deep_extend("force", options, {
+        allowed_tags = {},
+        keep_old_tag_directories = false,
+        event_filter = function(event)
+            return event.cat == constant.Category["function"]
+        end,
+    })
 
     -- NOTE: This is a bit of a hack but it lets us reuse all of the profiler logic.
     ---@diagnostic disable-next-line: cast-type-mismatch

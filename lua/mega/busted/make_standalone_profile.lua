@@ -75,16 +75,7 @@ function M.main(input)
         timing_threshold = 20,
     })
 
-    local release_name = "standalone"
-
-    helper.write_standalone_summary_directory(events, events, nil, all_options)
-    helper.write_flamegraph(profiler, events, vim.fs.joinpath(benchmarks, helper.FileName.flamegraph))
-    helper.write_profile_summary(
-        release_name,
-        events,
-        vim.fs.joinpath(benchmarks, helper.FileName.profile),
-        all_options.allow_event
-    )
+    helper.write_standalone_summary_directory(profiler, events, nil, all_options)
 
     _LOGGER:fmt_info('Finished writing all of "%s" directory.', benchmarks)
 end

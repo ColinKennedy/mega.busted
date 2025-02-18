@@ -8,6 +8,7 @@ M.Category = {
     file = "file",
     start = "start",
     test = "test",
+    ["function"] = "function",
 
     error = "error",
     failure = "failure",
