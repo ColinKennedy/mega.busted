@@ -1090,12 +1090,7 @@ end
 ---    All options used to visualize profiler results as line graph data.
 ---
 function M.get_busted_environment_variable_data()
-    local root = os.getenv("BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH")
-
-    if not root then
-        error("Cannot write profile results. $BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH is not defined.", 0)
-    end
-
+    local options = M.get_standalone_environment_variable_data()
     local release = os.getenv("BUSTED_PROFILER_FLAMEGRAPH_VERSION")
 
     if not release then
@@ -1106,16 +1101,35 @@ function M.get_busted_environment_variable_data()
 
     local maximum_tries = _P.validate_maximum_tries(os.getenv("BUSTED_PROFILER_MAXIMUM_TRIES"))
 
-    return {
+    local result = vim.tbl_deep_extend("force", options, {
         allowed_tags = _P.get_allowed_tags_from_environment_variable(),
         keep_old_tag_directories = os.getenv("BUSTED_PROFILER_KEEP_OLD_TAG_DIRECTORIES") ~= "1",
         keep_temporary_files = os.getenv("BUSTED_PROFILER_KEEP_TEMPORARY_FILES") == "1",
         maximum_tries = maximum_tries,
         release = release,
-        root = root,
         table_style = timing.TableStyle.github,
-        timing_threshold = _P.get_timing_threshold(),
-    }
+    })
+
+    ---@cast result BustedProfilerOptions
+
+    return result
+end
+
+--- Get all data needed to do a standalone profile run.
+---
+--- Raises:
+---     If any required data is missing.
+---
+---@return VersionedProfilerOptions # The found user inputs.
+---
+function M.get_standalone_environment_variable_data()
+    local root = os.getenv("BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH")
+
+    if not root then
+        error("Cannot write profile results. $BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH is not defined.", 0)
+    end
+
+    return { root=root, timing_threshold = _P.get_timing_threshold() }
 end
 
 --- Make sure `gnuplot` is installed and is accessible.
