@@ -2,7 +2,7 @@
 ---
 --- It runs tests multiple times and, each time, records profiler and timing results.
 ---
----@module 'busted.profiler_runner'
+---@module 'mega.busted.make_busted_profile'
 ---
 
 local _CURRENT_DIRECTORY =
@@ -20,7 +20,7 @@ local instrument = require("mega.busted._vendors.profile.instrument")
 local profile = require("mega.busted._vendors.profile")
 local logging = require("mega.logging")
 
-local _LOGGER = logging.get_logger("mega.busted.profiler_runner")
+local _LOGGER = logging.get_logger("mega.busted.make_busted_profile")
 
 local M = {}
 local _P = {}
@@ -161,7 +161,24 @@ function _P.run_busted_suite(runner, options)
     end)
 end
 
----@class ProfilerOptions
+---@class CommonProfilerOptions
+---    Basic options that can be used by most / any profiler runner.
+---@field root string
+---    An absolute path to the directory on-disk where files are written.
+---@field allow_event fun(event: profile.Event): boolean
+---    If this function returns `true` then the event will be considered for
+---    summarizing timing information. If `false` then it may still be used for
+---    other parts or profiling but it will not contribute to "timing.txt", for
+---    example.
+
+---@class VersionedProfilerOptions : CommonProfilerOptions
+---    A profile result that is named / has extra metadata.
+---@field release string
+---    A version / release tag. e.g. `"v1.2.3"`.
+---@field timing_threshold integer
+---    The number of (slowest function) entries to write in the output.
+
+---@class BustedProfilerOptions : VersionedProfilerOptions
 ---    All options used to visualize profiler results as line graph data.
 ---@field allowed_tags string[]
 ---    Get the allowes tags that may write to disk. e.g. `{"foo.*bar", "thing"}`.
@@ -177,14 +194,13 @@ end
 ---    This controls the number of times that tests can run before we determine
 ---    that we've found a "fastest" test run. The higher the value, the longer
 ---    but more accurate this function becomes.
----@field release string
----    A version / release tag. e.g. `"v1.2.3"`.
----@field root string
----    An absolute path to the directory on-disk where files are written.
+---@field minimum_samples boolean
+---    If `false` then .png files are only written if there is enough data to
+---    form a line / meaningful visual output. If `true` then the .png files
+---    are always written, even if they'd produce blank graphs. Most of the
+---    time you want this to be `false`, `true` is meant for debugging.
 ---@field table_style _TableStyle
 ---    Profiler summary data will be displayed as a table in this style.
----@field timing_threshold integer
----    The number of (slowest function) entries to write in the output.
 
 --- Run the unittest multiple times until a "fastest time" is found.
 ---
@@ -205,7 +221,7 @@ end
 ---
 ---@param profiler Profiler
 ---    The object used to record function call times.
----@param options ProfilerOptions
+---@param options BustedProfilerOptions
 ---    All options used to visualize profiler results as line graph data.
 ---
 local function run_tests(profiler, options)
@@ -246,7 +262,7 @@ local function run_tests(profiler, options)
     end
 
     local benchmarks = vim.fs.joinpath(root, "benchmarks")
-    helper.write_summary_directory(
+    helper.write_busted_summary_directory(
         profile,
         fastest_events,
         nil,
@@ -263,14 +279,16 @@ end
 
 --- Run these tests.
 function M.main()
-    local options = helper.get_environment_variable_data()
+    local options = helper.get_busted_environment_variable_data()
 
     helper.validate_gnuplot()
 
-    -- NOTE: Don't profile the unittest framework
+    -- NOTE: Don't profile the unittest framework or its dependencies
+    -- TODO: Make common function for this later
     local profiler = profile
     profiler.ignore("busted*")
-    profiler.ignore("mega.busted*")
+    profiler.ignore("mega.busted.*")
+    profiler.ignore("mega.logging.*")
 
     instrument("*")
 

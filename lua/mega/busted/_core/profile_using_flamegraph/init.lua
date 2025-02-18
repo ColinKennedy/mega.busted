@@ -142,7 +142,7 @@ return function(options)
     local busted = require("busted")
     local handler = require("busted.outputHandlers.base")()
 
-    local environment_options = helper.get_environment_variable_data()
+    local environment_options = helper.get_busted_environment_variable_data()
     local root = options.root
     local release = options.release
 

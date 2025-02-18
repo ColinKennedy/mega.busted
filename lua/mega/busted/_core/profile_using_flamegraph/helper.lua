@@ -797,7 +797,7 @@ end
 ---@param events profile.Event[]
 ---    All of the profiler event data to consider. If no events are given, we
 ---    will use the global profiler's events instead.
----@param options ProfilerOptions
+---@param options BustedProfilerOptions
 ---    All options used to visualize profiler results as line graph data.
 ---@return string
 ---    An absolute path to the created flamegraph.json file.
@@ -819,7 +819,6 @@ function _P.write_graph_artifact(profiler, events, options)
 
     local profile_path = vim.fs.joinpath(directory, _PROFILE_FILE_NAME)
     _P.write_profile_summary(options.release, events, profile_path)
-
     local timing_path = vim.fs.joinpath(directory, _TIMING_FILE_NAME)
     local timing_text = _P.write_timing(events, timing_path, options)
 
@@ -1062,7 +1061,7 @@ end
 --- TODO: Docstring
 ---@param events profile.Event[]
 ---@param path string
----@param options ProfilerOptions
+---@param options BustedProfilerOptions
 ---@return string
 function _P.write_timing(events, path, options)
     _LOGGER:fmt_info('Writing "%s" timing file.', path)
@@ -1087,10 +1086,10 @@ end
 --- Raises:
 ---     If a required environment variable was not defined correctly.
 ---
----@return ProfilerOptions
+---@return BustedProfilerOptions
 ---    All options used to visualize profiler results as line graph data.
 ---
-function M.get_environment_variable_data()
+function M.get_busted_environment_variable_data()
     local root = os.getenv("BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH")
 
     if not root then
@@ -1138,7 +1137,7 @@ end
 ---
 --- The basic directory structure looks like this:
 ---
---- - all/
+--- - {root} (usually all/)
 ---     - artifacts/
 ---         - {VERSION_TAG-YYYY_MM_DD-HH_MM_SS}/
 ---             - flamegraph.json
@@ -1164,10 +1163,10 @@ end
 ---    preferred. Note: It is unwise to set this number higher than the default
 ---    (35). Experimentation showed that the X-axis of the graph becomes
 ---    unreadable after 35.
----@param options ProfilerOptions
+---@param options BustedProfilerOptions
 ---    All options used to visualize profiler results as line graph data.
 ---
-function M.write_summary_directory(profiler, events, maximum, options)
+function M.write_busted_summary_directory(profiler, events, maximum, options)
     local release = options.release
     local root = options.root
     _LOGGER:fmt_info('Now writing profiler "%s" results to "%s" path.', release, root)
@@ -1252,7 +1251,7 @@ end
 ---    preferred. Note: It is unwise to set this number higher than the default
 ---    (35). Experimentation showed that the X-axis of the graph becomes
 ---    unreadable after 35.
----@param options ProfilerOptions
+---@param options BustedProfilerOptions
 ---    All options used to visualize profiler results as line graph data.
 ---
 function M.write_tags_directory(profiler, events, maximum, options)
@@ -1354,7 +1353,7 @@ function M.write_tags_directory(profiler, events, maximum, options)
     for tag, events_ in pairs(events_by_tag) do
         if _P.is_allowed_tag(tag, allowed_tags) and not vim.tbl_isempty(events_) then
             local directory = vim.fs.joinpath(root, tag)
-            M.write_summary_directory(
+            M.write_busted_summary_directory(
                 profiler,
                 events_,
                 maximum,
