@@ -118,28 +118,6 @@ function _P.is_allowed_tag(tag, patterns)
     return false
 end
 
---- Check if `release` is a greater version number than everything in `root`.
----
---- Most of the time this function returns `true`. But if a user is
---- back-patching a version this might return `false`.
----
----@param release number[] A major / minor / patch. e.g. "v1.2.3" would be `{1, 2, 3}`.
----@param root string The directory on-disk where past releases live.
----@return boolean # If `release` is an earlier release number, return `false`.
----
-function _P.is_latest_version(release, root)
-    for _, directory in ipairs(_P.get_directories(root)) do
-        local full_name = vim.fs.basename(directory)
-        local version = _P.get_version_from_directory_name(full_name)
-
-        if _P.compare_number_arrays(version, release) == 1 then
-            return false
-        end
-    end
-
-    return true
-end
-
 --- Check if `version` is not meant to be directly used to users.
 ---
 ---@param version string A full version tag, e.g. `"v1.2.3"`.
