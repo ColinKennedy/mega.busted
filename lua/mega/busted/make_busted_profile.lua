@@ -198,6 +198,10 @@ end
 ---    All options used to visualize profiler results as line graph data.
 ---@field allowed_tags string[]
 ---    Get the allowes tags that may write to disk. e.g. `{"foo.*bar", "thing"}`.
+---@field event_summary_filter (fun(event: profile.Event): boolean)?
+---    If `true`, the given event is included during profiler summaries. If
+---    `false`, it is excluded. This is useful when you want to summarize only
+---    one type of profiler event when many possible types exist.
 ---@field keep_old_tag_directories boolean
 ---    If the user's busted unittests previously defined a tag, e.g. a tag called `asdf`
 ---    and now that tag is gone and this option is `true` then all previous profile

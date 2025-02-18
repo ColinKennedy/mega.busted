@@ -848,7 +848,7 @@ function _P.write_graph_artifact(profiler, events, options)
     _P.write_flamegraph(profiler, events, flamegraph_path)
 
     local profile_path = vim.fs.joinpath(directory, _P.FileName.profile)
-    local statistics = _P.get_profile_statistics(events, { predicate = options.event_filter })
+    local statistics = _P.get_profile_statistics(events, { predicate = options.event_summary_filter })
     _P.write_profile_summary(options.release or datetime, statistics, profile_path)
     local timing_path = vim.fs.joinpath(directory, _P.FileName.timing)
     local timing_text = _P.write_timing(events, timing_path, options)
@@ -1210,7 +1210,7 @@ end
 ---    All options used to visualize profiler results as line graph data.
 ---
 function M.write_busted_summary_directory(profiler, events, maximum, options)
-    options.event_filter = options.event_filter
+    options.event_summary_filter = options.event_summary_filter
         or function(event)
             return event.cat == constant.Category.test
         end
@@ -1305,7 +1305,7 @@ function M.write_standalone_summary_directory(profiler, events, maximum, options
     options = vim.tbl_deep_extend("force", options, {
         allowed_tags = {},
         keep_old_tag_directories = false,
-        event_filter = function(event)
+        event_summary_filter = function(event)
             return event.cat == constant.Category["function"]
         end,
     })
