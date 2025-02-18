@@ -2,8 +2,6 @@
 ---
 --- It profile's the user's Neovim plugin and outputs that information to-disk.
 ---
---- @module 'busted.profile_using_flamegraph'
----
 
 ---@see https://github.com/hishamhm/busted-htest/blob/master/src/busted/outputHandlers/htest.lua
 

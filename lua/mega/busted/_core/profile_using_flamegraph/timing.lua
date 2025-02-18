@@ -1,7 +1,4 @@
 --- Convert flamegraph event data into a "profile summary" page.
----
----@module 'busted.profile_using_flamegraph.timing'
----
 
 local constant = require("mega.busted._vendors.profile.constant")
 

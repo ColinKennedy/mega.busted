@@ -5,8 +5,6 @@
 --- "this function's execution time". So if a function calls another function,
 --- that inner function is not part of the "self-time" of the outer function.
 ---
----@module 'busted.profile_using_flamegraph.self_timing'
----
 
 local logging = require("mega.logging")
 

@@ -4,8 +4,6 @@
 --- https://github.com/lunarmodules/busted/blob/master/busted/runner.lua, which
 --- unfortunately is unusable because it is too strict for our needs.
 ---
----@module 'busted.multi_runner'
----
 
 ---@class busted.MultiRunner A unittest suite runner.
 

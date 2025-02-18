@@ -2,8 +2,6 @@
 ---
 --- It runs tests multiple times and, each time, records profiler and timing results.
 ---
----@module 'mega.busted.make_busted_profile'
----
 
 local _CURRENT_DIRECTORY =
     vim.fs.dirname(vim.fs.joinpath(vim.fn.getcwd(), debug.getinfo(1, "S").source:match("@(.*)$")))

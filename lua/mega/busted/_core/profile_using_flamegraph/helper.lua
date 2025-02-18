@@ -1,7 +1,4 @@
 --- The module that handles writing graph and profile and timing data to-disk.
----
----@module 'busted.profile_using_flamegraph.helper'
----
 
 local constant = require("mega.busted._core.profile_using_flamegraph.constant")
 local instrument = require("mega.busted._vendors.profile.instrument")

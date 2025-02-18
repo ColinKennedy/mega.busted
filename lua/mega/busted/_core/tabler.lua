@@ -1,7 +1,4 @@
 --- Make dealing with Lua tables a bit easier.
----
----@module 'mega.busted._core.tabler'
----
 
 local M = {}
 
