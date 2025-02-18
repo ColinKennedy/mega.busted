@@ -136,10 +136,8 @@ M.export = function(filename)
 end
 
 ---Write the trace to a file
----@param filename string
----    A path on-disk where the profiler flamegraph will be exported to.
----@param events profile.Event[]
----    The recorded profile event to export. If none are given, the global events are exported instead.
+---@param filename string A path on-disk where the profiler flamegraph will be exported to.
+---@param events profile.Event[] The recorded profile event to export. If none are given, the global events are exported instead.
 ---@private
 M.write_events_to_file = function(filename, events)
   local original_recording = instrument.recording
