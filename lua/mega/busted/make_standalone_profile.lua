@@ -71,16 +71,16 @@ function M.main(input)
     end
 
     local all_options = vim.tbl_deep_extend("force", options, {
-        release = name,
         root = benchmarks,
         timing_threshold = 20,
     })
-    ---@cast all_options VersionedProfilerOptions
 
-    helper.write_standalone_summary_directory(events, nil, all_options)
+    local release_name = "standalone"
+
+    helper.write_standalone_summary_directory(events, events, nil, all_options)
     helper.write_flamegraph(profiler, events, vim.fs.joinpath(benchmarks, helper.FileName.flamegraph))
     helper.write_profile_summary(
-        all_options.release,
+        release_name,
         events,
         vim.fs.joinpath(benchmarks, helper.FileName.profile),
         all_options.allow_event

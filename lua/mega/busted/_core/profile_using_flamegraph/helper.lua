@@ -437,6 +437,24 @@ function _P.get_profile_statistics(events)
     }
 end
 
+--- Get the partial data needed to do a busted / standalone profile run.
+---
+--- Raises:
+---     If any required data is missing.
+---
+---@return SimpleProfilerOptions # The found user inputs.
+---
+function _P.get_simple_environment_variable_data()
+    local root = os.getenv("BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH")
+
+    if not root then
+        error("Cannot write profile results. $BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH is not defined.", 0)
+    end
+
+    return {root=root}
+end
+
+
 --- Strip unnecessary information from `version`.
 ---
 ---@param version _NeovimFullVersion The full `vim.version()` output.
@@ -810,15 +828,23 @@ end
 ---
 function _P.write_graph_artifact(profiler, events, options)
     _LOGGER:info("Writing date-time profiler directory data.")
-    local directory =
-        vim.fs.joinpath(options.root, string.format("%s-%s", options.release, os.date("%Y_%m_%d-%H_%M_%S")))
+
+    local directory
+    local datetime = tostring(os.date("%Y_%m_%d-%H_%M_%S"))
+
+    if options.release then
+        directory = vim.fs.joinpath(options.root, string.format("%s-%s", options.release, datetime))
+    else
+        directory = vim.fs.joinpath(options.root, datetime)
+    end
+
     vim.fn.mkdir(directory, "p")
 
     local flamegraph_path = vim.fs.joinpath(directory, _FLAMEGRAPH_FILE_NAME)
     _P.write_flamegraph(profiler, events, flamegraph_path)
 
     local profile_path = vim.fs.joinpath(directory, _PROFILE_FILE_NAME)
-    _P.write_profile_summary(options.release, events, profile_path)
+    _P.write_profile_summary(options.release or datetime, events, profile_path)
     local timing_path = vim.fs.joinpath(directory, _TIMING_FILE_NAME)
     local timing_text = _P.write_timing(events, timing_path, options)
 
@@ -1090,7 +1116,7 @@ end
 ---    All options used to visualize profiler results as line graph data.
 ---
 function M.get_busted_environment_variable_data()
-    local options = M.get_standalone_environment_variable_data()
+    local options = _P.get_simple_environment_variable_data()
     local release = os.getenv("BUSTED_PROFILER_FLAMEGRAPH_VERSION")
 
     if not release then
@@ -1120,16 +1146,15 @@ end
 --- Raises:
 ---     If any required data is missing.
 ---
----@return VersionedProfilerOptions # The found user inputs.
+---@return StandaloneProfilerOptions # The found user inputs.
 ---
 function M.get_standalone_environment_variable_data()
-    local root = os.getenv("BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH")
+    local options = _P.get_simple_environment_variable_data()
 
-    if not root then
-        error("Cannot write profile results. $BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH is not defined.", 0)
-    end
+    local result = vim.tbl_deep_extend("force", options, {timing_threshold = _P.get_timing_threshold() })
+    ---@cast result StandaloneProfilerOptions
 
-    return { root=root, timing_threshold = _P.get_timing_threshold() }
+    return result
 end
 
 --- Make sure `gnuplot` is installed and is accessible.
@@ -1181,9 +1206,8 @@ end
 ---    All options used to visualize profiler results as line graph data.
 ---
 function M.write_busted_summary_directory(profiler, events, maximum, options)
-    local release = options.release
     local root = options.root
-    _LOGGER:fmt_info('Now writing profiler "%s" results to "%s" path.', release, root)
+    _LOGGER:fmt_info('Now writing profiler results to "%s" path.', root)
     maximum = maximum or _DEFAULT_MAXIMUM_ARTIFACTS
 
     if maximum < 1 then
@@ -1210,8 +1234,10 @@ function M.write_busted_summary_directory(profiler, events, maximum, options)
     ---@cast latest _GraphArtifact?
     ---@cast second_latest _GraphArtifact?
 
-    if _P.is_stable_release(release) and (not latest or (release == latest.versions.release)) then
-        _LOGGER:fmt_info('Copying "%s" release to "%s" path.', release, root)
+    local release = options.release
+
+    if not release or (_P.is_stable_release(release) and (not latest or (release == latest.versions.release))) then
+        _LOGGER:fmt_info('Copying profiler-related files to "%s" path.', root)
         _P.copy_file_to_directory(flamegraph_path, root)
         _P.copy_file_to_directory(profile_path, root)
         _P.copy_file_to_directory(timing_path, root)
@@ -1232,6 +1258,53 @@ function M.write_busted_summary_directory(profiler, events, maximum, options)
     end
 
     _P.write_summary_readme(artifacts, graphs, readme_path, timing_text, latests)
+end
+
+--- Write all files for the "benchmarks/standalone" directory.
+---
+--- The basic directory structure looks like this:
+---
+--- - {root} (usually standalone/)
+---     - artifacts/
+---         - {YYYY_MM_DD-HH_MM_SS}/
+---             - flamegraph.json
+---             - profile.json
+---     - README.md
+---         - Show the graph of the output, across versions
+---         - A table summary of the timing
+---     - flamegraph.json
+---     - profile.json - The latest release's total time, self time, etc
+---     - *.png - Profiler-related line-graphs
+---
+--- Raises:
+---    If an invalid `maximum` is given.
+---
+---@param profiler Profiler
+---    The object used to record function call times.
+---@param events profile.Event[]?
+---    All of the profiler event data to consider. If no events are given, we
+---    will use the global profiler's events instead.
+---@param maximum number?
+---    A 1-or-more value. The number of samples to collect for graphing. If
+---    there are more samples than `maximum` allows, the later smples are
+---    preferred. Note: It is unwise to set this number higher than the default
+---    (35). Experimentation showed that the X-axis of the graph becomes
+---    unreadable after 35.
+---@param options StandaloneProfilerOptions
+---    All options used to visualize profiler results as line graph data.
+---
+function M.write_standalone_summary_directory(profiler, events, maximum, options)
+    options = vim.tbl_deep_extend(
+        "force",
+        options,
+        {allowed_tags={}, keep_old_tag_directories=false}
+    )
+
+    -- NOTE: This is a bit of a hack but it lets us reuse all of the profiler logic.
+    ---@diagnostic disable-next-line: cast-type-mismatch
+    ---@cast options BustedProfilerOptions
+
+    M.write_busted_summary_directory(profiler, events, maximum, options)
 end
 
 --- Write all files for the "benchmarks/tags" directory.

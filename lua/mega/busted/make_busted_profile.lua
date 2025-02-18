@@ -173,20 +173,14 @@ end
 
 ---@class VersionedProfilerOptions : CommonProfilerOptions
 ---    A profile result that is named / has extra metadata.
----@field release string
+---@field release string?
 ---    A version / release tag. e.g. `"v1.2.3"`.
 ---@field timing_threshold integer
 ---    The number of (slowest function) entries to write in the output.
 
----@class BustedProfilerOptions : VersionedProfilerOptions
----    All options used to visualize profiler results as line graph data.
----@field allowed_tags string[]
----    Get the allowes tags that may write to disk. e.g. `{"foo.*bar", "thing"}`.
----@field keep_old_tag_directories boolean
----    If the user's busted unittests previously defined a tag, e.g. a tag called `asdf`
----    and now that tag is gone and this option is `true` then all previous profile
----    results for that tag are deleted. This is just to keep the folders as clean and
----    up-to-date as possible.
+---@class SimpleProfilerOptions : VersionedProfilerOptions
+---    Settings that profile-runners typically need. This is a base class that
+---    is meant to be extended for specific use-cases.
 ---@field keep_temporary_files boolean
 ---    If `true`, don't delete any intermediary, generated files. Useful for
 ---    debugging. 99% of the time you want this to be `false` though.
@@ -201,6 +195,18 @@ end
 ---    time you want this to be `false`, `true` is meant for debugging.
 ---@field table_style _TableStyle
 ---    Profiler summary data will be displayed as a table in this style.
+
+---@class BustedProfilerOptions : SimpleProfilerOptions
+---    All options used to visualize profiler results as line graph data.
+---@field allowed_tags string[]
+---    Get the allowes tags that may write to disk. e.g. `{"foo.*bar", "thing"}`.
+---@field keep_old_tag_directories boolean
+---    If the user's busted unittests previously defined a tag, e.g. a tag called `asdf`
+---    and now that tag is gone and this option is `true` then all previous profile
+---    results for that tag are deleted. This is just to keep the folders as clean and
+---    up-to-date as possible.
+
+---@class StandaloneProfilerOptions : SimpleProfilerOptions
 
 --- Run the unittest multiple times until a "fastest time" is found.
 ---

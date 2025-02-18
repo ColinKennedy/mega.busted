@@ -21,7 +21,7 @@
 ---    The settings used to control how the runner executes the tests.
 ---@field output_handler_root string
 ---    The directory on-disk where profile / timing results will be written to.
----@field release string
+---@field release string?
 ---    The version / release tag to add to profile / timing results. e.g. `"v1.2.3"`.
 
 -- TODO: Simplify the code here, later
