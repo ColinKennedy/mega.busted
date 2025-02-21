@@ -9,6 +9,13 @@ local _ENVIRONMENT_VARIABLES = {}
 local _ORIGINAL_BUSTED_PROFILE_MAIN_FUNCTION = make_busted_profile._main
 local _ORIGINAL_STANDALONE_PROFILE_MAIN_FUNCTION = make_standalone_profile._main
 
+--- Reference:
+---     https://github.com/neovim/neovim/issues/32550
+---
+local function _setenv(key, value)
+    vim.cmd(string.format('let $%s = "%s"', key, value))
+end
+
 local function _add_minimal_environment_variables()
     _setenv("BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH", "foo")
 end
@@ -79,13 +86,6 @@ local function _save_environment_variables()
     for key, value in pairs(vim.fn.environ()) do
         _ENVIRONMENT_VARIABLES[key] = value
     end
-end
-
---- Reference:
----     https://github.com/neovim/neovim/issues/32550
----
-local function _setenv(key, value)
-    vim.cmd(string.format('let $%s = "%s"', key, value))
 end
 
 before_each(function()
