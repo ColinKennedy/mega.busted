@@ -10,7 +10,7 @@ local _ORIGINAL_BUSTED_PROFILE_MAIN_FUNCTION = make_busted_profile._main
 local _ORIGINAL_STANDALONE_PROFILE_MAIN_FUNCTION = make_standalone_profile._main
 
 local function _add_minimal_environment_variables()
-    vim.uv.os_setenv("BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH", "foo")
+    _setenv("BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH", "foo")
 end
 
 --- Run the busted profiler and make sure it fails.
@@ -54,6 +54,24 @@ local function _mock_main()
     make_standalone_profile._main = function() end
 end
 
+--- Delete all environment variables and restore the old, saved variables from before.
+local function _restore_environment_variables()
+    -- NOTE: Clear all environment variables so we can restore them
+    for key, _ in pairs(vim.fn.environ()) do
+        vim.uv.os_unsetenv(key)
+    end
+
+    for key, value in pairs(_ENVIRONMENT_VARIABLES) do
+        _setenv(key, value)
+    end
+end
+
+--- Get the original functions back, in case we need them for other unittests.
+local function _restore_main()
+    make_busted_profile._main = _ORIGINAL_BUSTED_PROFILE_MAIN_FUNCTION
+    make_standalone_profile._main = _ORIGINAL_STANDALONE_PROFILE_MAIN_FUNCTION
+end
+
 --- Keep track of all environment variables so we can replace during unittests, safely.
 local function _save_environment_variables()
     _ENVIRONMENT_VARIABLES = {}
@@ -63,22 +81,11 @@ local function _save_environment_variables()
     end
 end
 
---- Delete all environment variables and restore the old, saved variables from before.
-local function _restore_environment_variables()
-    -- NOTE: Clear all environment variables so we can restore them
-    for key, _ in pairs(vim.fn.environ()) do
-        vim.uv.os_unsetenv(key)
-    end
-
-    for key, value in pairs(_ENVIRONMENT_VARIABLES) do
-        vim.uv.os_setenv(key, value)
-    end
-end
-
---- Get the original functions back, in case we need them for other unittests.
-local function _restore_main()
-    make_busted_profile._main = _ORIGINAL_BUSTED_PROFILE_MAIN_FUNCTION
-    make_standalone_profile._main = _ORIGINAL_STANDALONE_PROFILE_MAIN_FUNCTION
+--- Reference:
+---     https://github.com/neovim/neovim/issues/32550
+---
+local function _setenv(key, value)
+    vim.cmd(string.format('let $%s = "%s"', key, value))
 end
 
 before_each(function()
@@ -95,53 +102,53 @@ describe("environment variable validation", function()
 
     describe("BUSTED_PROFILER_ALLOW_NIGHTLY", function()
         it("errors if not 0 or 1", function()
-            vim.uv.os_setenv("BUSTED_PROFILER_ALLOW_NIGHTLY", "3")
+            _setenv("BUSTED_PROFILER_ALLOW_NIGHTLY", "3")
             _assert_test_failure('$BUSTED_PROFILER_ALLOW_NIGHTLY must be 0 or 1. Got "3" number.')
 
-            vim.uv.os_setenv("BUSTED_PROFILER_ALLOW_NIGHTLY", "ttt")
+            _setenv("BUSTED_PROFILER_ALLOW_NIGHTLY", "ttt")
             _assert_test_failure('$BUSTED_PROFILER_ALLOW_NIGHTLY must be 0 or 1. Got "ttt" unknown value.')
         end)
     end)
 
     describe("BUSTED_PROFILER_MAXIMUM_TRIES", function()
         it("errors if not 1-or-more", function()
-            vim.uv.os_setenv("BUSTED_PROFILER_MAXIMUM_TRIES", "0")
+            _setenv("BUSTED_PROFILER_MAXIMUM_TRIES", "0")
             _assert_test_failure('$BUSTED_PROFILER_MAXIMUM_TRIES must be 1-or-more. Got "0" value.')
 
-            vim.uv.os_setenv("BUSTED_PROFILER_MAXIMUM_TRIES", "ttt")
+            _setenv("BUSTED_PROFILER_MAXIMUM_TRIES", "ttt")
             _assert_test_failure('$BUSTED_PROFILER_MAXIMUM_TRIES must be 1-or-more. Got "ttt" unknown value.')
         end)
     end)
 
     describe("BUSTED_PROFILER_MINIMUM_SAMPLES", function()
         it("errors if not 1-or-more", function()
-            vim.uv.os_setenv("BUSTED_PROFILER_MINIMUM_SAMPLES", "0")
+            _setenv("BUSTED_PROFILER_MINIMUM_SAMPLES", "0")
             _assert_test_failure('$BUSTED_PROFILER_MINIMUM_SAMPLES must be 1-or-more. Got "0" value.')
 
-            vim.uv.os_setenv("BUSTED_PROFILER_MINIMUM_SAMPLES", "ttt")
+            _setenv("BUSTED_PROFILER_MINIMUM_SAMPLES", "ttt")
             _assert_test_failure('$BUSTED_PROFILER_MINIMUM_SAMPLES must be 1-or-more. Got "ttt" unknown value.')
         end)
     end)
 
     describe("BUSTED_PROFILER_TIMING_THRESHOLD", function()
         it("errors if not 1-or-more", function()
-            vim.uv.os_setenv("BUSTED_PROFILER_TIMING_THRESHOLD", "0")
+            _setenv("BUSTED_PROFILER_TIMING_THRESHOLD", "0")
             _assert_test_failure('$BUSTED_PROFILER_TIMING_THRESHOLD must be 1-or-more. Got "0" value.')
 
-            vim.uv.os_setenv("BUSTED_PROFILER_TIMING_THRESHOLD", "ttt")
+            _setenv("BUSTED_PROFILER_TIMING_THRESHOLD", "ttt")
             _assert_test_failure('$BUSTED_PROFILER_TIMING_THRESHOLD must be 1-or-more. Got "ttt" unknown value.')
         end)
     end)
 
     describe("BUSTED_PROFILER_KEEP_TEMPORARY_FILES", function()
         it("errors if not 0 or 1", function()
-            vim.uv.os_setenv("BUSTED_PROFILER_KEEP_TEMPORARY_FILES", "2")
+            _setenv("BUSTED_PROFILER_KEEP_TEMPORARY_FILES", "2")
             _assert_test_failure('$BUSTED_PROFILER_KEEP_TEMPORARY_FILES must be 0 or 1. Got "2" number.')
 
-            vim.uv.os_setenv("BUSTED_PROFILER_KEEP_TEMPORARY_FILES", "-1")
+            _setenv("BUSTED_PROFILER_KEEP_TEMPORARY_FILES", "-1")
             _assert_test_failure('$BUSTED_PROFILER_KEEP_TEMPORARY_FILES must be 0 or 1. Got "-1" number.')
 
-            vim.uv.os_setenv("BUSTED_PROFILER_KEEP_TEMPORARY_FILES", "ttt")
+            _setenv("BUSTED_PROFILER_KEEP_TEMPORARY_FILES", "ttt")
             _assert_test_failure('$BUSTED_PROFILER_KEEP_TEMPORARY_FILES must be 0 or 1. Got "ttt" unknown value.')
         end)
     end)
