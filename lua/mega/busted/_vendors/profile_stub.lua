@@ -1,0 +1,14 @@
+--- Extra classes and functions from `profile.nvim`.
+---
+--- [profile.nvim](https://github.com/stevearc/profile.nvim) defines the types
+--- but those types don't exist as Lua / Vimdoc documentation. So in the future
+--- that is added, this file can be safely removed.
+---
+
+---@class profile.Event A single, recorded profile event.
+---@field cat string The category of the profiler event. e.g. `"function"`, `"test"`, etc.
+---@field dur number The length of CPU time needed to complete the event.
+---@field name string The function call, file path, or other ID.
+---@field pid number? The process ID number.
+---@field tid number The thread ID number.
+---@field ts number The start CPU time.

@@ -1,0 +1,24 @@
+==============================================================================
+------------------------------------------------------------------------------
+Runs the given command(s) and profiles the result.
+
+Example:
+    nvim -l make_standalone_profile.lua 'require("some.important.module").main()'
+
+------------------------------------------------------------------------------
+                                    *mega.busted.make_standalone_profile.main()*
+
+`mega.busted.make_standalone_profile.main`({input})
+
+Collect all lua commands, profile them, and then write the profiler results to-disk.
+
+Raises:
+    If the user does not provide at least one Lua command to run.
+
+Parameters ~
+    {input} `(string)`[] All of the Lua command(s) to execute.
+
+
+WARNING: This file is auto-generated. Do not edit it!
+
+ vim:tw=78:ts=8:noet:ft=help:norl:

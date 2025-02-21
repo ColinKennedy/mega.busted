@@ -17,4 +17,4 @@ ignore = {
 -- Global objects defined by the C code
 read_globals = { "vim" }
 
-exclude_files = {  }
+exclude_files = { "lua/mega/busted/_vendors/**/*.lua" }
