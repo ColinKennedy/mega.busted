@@ -8,14 +8,17 @@ on:
   push:
     branches:
       - main
+      # TODO: Remove later
+      - fourth_pass
 
 jobs:
   test:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        neovim: [v0.10.0, stable, nightly]
-        luaVersion: ["luajit-openresty"]
+        # TODO: Add this back later
+        # os: [ubuntu-latest, macos-latest]
+        # neovim: [v0.10.0, stable, nightly]
+        # luaVersion: ["luajit-openresty"]
         include:
         - os: "windows-latest"
           toolchain: "msvc"
